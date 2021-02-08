@@ -1,8 +1,8 @@
 # Unique name for this workflow
-name: System - 2 - Scan Code & Run Apex Tests
+name: System - 4 - Scan Code & Run Apex Tests
 
 # Definition when the workflow should run
-on:  
+on:
   pull_request:
     types: [opened]
     branches:

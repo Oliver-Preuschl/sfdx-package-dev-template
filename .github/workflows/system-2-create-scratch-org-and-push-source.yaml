@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: System - 1 - Create Scratch Org
+name: System - 2 - Create Scratch Org & push source
 
 # Definition when the workflow should run
 on:
@@ -25,6 +25,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+
       # Store devhub secret in file
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
@@ -44,6 +45,7 @@ jobs:
         run: |
           output=$(sfdx force:org:display -u scratchorg --verbose | grep -o "force://.*")
           echo "::set-output name=auth_url::$output"
+
       # Create SCRATCH_ORG_AUTH_URL Secret
       - name: "Create SCRATCH_ORG_AUTH_URL Secret"
         uses: gliech/create-github-secret-action@v1
@@ -55,3 +57,7 @@ jobs:
       # Display scratch org login URL
       - name: "Display Scratch Org Login Link"
         run: "sfdx force:org:open -u=scratchorg"
+
+      # Push Source to ScratchOrg
+      - name: "Push Source to ScratchOrg"
+        run: "sfdx force:source:push"

@@ -25,7 +25,8 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
-      # Store secret for dev hub
+
+      # Store devhub secret in file
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
@@ -34,7 +35,7 @@ jobs:
       - name: "Authenticate Dev Hub"
         run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      # Store secret for scratch org
+      # Store secret for scratch org in file
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         env:
           SCRATCH_ORG_AUTH_URL: SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}
@@ -42,6 +43,7 @@ jobs:
         run: |
           authurl=${{ secrets[env.SCRATCH_ORG_AUTH_URL] }}
           echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+
       # Authenticate scratch org
       - name: "Authenticate Scratch Org"
         run: "sfdx force:auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
