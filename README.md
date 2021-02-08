@@ -1,1 +1,1 @@
-![Code Scan & Apex Test Results](../../.github/workflows/system-2-scan-code-and-run-apex-tests.yaml.yml/badge.svg)
+![Code Scan & Apex Test Results](../../workflows/system-2-scan-code-and-run-apex-tests/badge.svg)
