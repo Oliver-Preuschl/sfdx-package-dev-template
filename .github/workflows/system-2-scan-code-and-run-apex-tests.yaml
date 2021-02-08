@@ -2,7 +2,7 @@
 name: System - 2 - Scan Code & Run Apex Tests
 
 # Definition when the workflow should run
-on:  
+on:
   pull_request:
     types: [opened]
     branches:
@@ -46,7 +46,7 @@ jobs:
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
-        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       # Install npm dependencies for Prettier and Jest
       - name: "Install npm dependencies"
@@ -79,7 +79,7 @@ jobs:
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
-        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       # Create scratch org
       - name: "Create scratch org"

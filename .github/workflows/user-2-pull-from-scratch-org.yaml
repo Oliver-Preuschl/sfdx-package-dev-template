@@ -36,7 +36,7 @@ jobs:
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
-        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       # Store secret for scratch org
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
@@ -48,7 +48,7 @@ jobs:
           echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
       # Authenticate scratch org
       - name: "Authenticate Scratch Org"
-        run: "sfdx force:auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+        run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
       # Pull Source from ScratchOrg
       - name: "Pull Source from ScratchOrg"
