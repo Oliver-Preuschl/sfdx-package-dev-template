@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: Create Scratch Org
+name: System - 1 - Create Scratch Org
 
 # Definition when the workflow should run
 on:
