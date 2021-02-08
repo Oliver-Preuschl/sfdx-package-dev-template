@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: Create Package Version
+name: System - 4 - Promote Package Version
 
 # Definition when the workflow should run
 on:
