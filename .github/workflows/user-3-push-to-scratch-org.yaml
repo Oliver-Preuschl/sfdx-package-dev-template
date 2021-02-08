@@ -1,0 +1,51 @@
+# Unique name for this workflow
+name: User - 3 - Push Changes to Scratch Org
+
+# Definition when the workflow should run
+on:
+  workflow_dispatch:
+    branches-ignore:
+      - master
+
+# Jobs to be executed
+jobs:
+  PushSourceToScratchOrg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: FranzDiebold/github-env-vars-action@v1.2.1
+
+      # Checkout the code
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+      # Store secret for dev hub
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      # Authenticate dev hub
+      - name: "Authenticate Dev Hub"
+        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      # Store secret for scratch org
+      - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
+        env:
+          SCRATCH_ORG_AUTH_URL: SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}
+        shell: bash
+        run: |
+          authurl=${{ secrets[env.SCRATCH_ORG_AUTH_URL] }}
+          echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+      # Authenticate scratch org
+      - name: "Authenticate Scratch Org"
+        run: "sfdx force:auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+
+      # Push Source to ScratchOrg
+      - name: "Push Source to ScratchOrg"
+        run: "sfdx force:source:push"
