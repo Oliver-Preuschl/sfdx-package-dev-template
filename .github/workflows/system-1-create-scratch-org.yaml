@@ -3,7 +3,9 @@ name: System - 1 - Create Scratch Org
 
 # Definition when the workflow should run
 on:
-  create
+  create:
+    branches-ignore:
+      - "master"
 
 # Jobs to be executed
 jobs:
