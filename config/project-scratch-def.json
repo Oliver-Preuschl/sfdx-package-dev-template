@@ -1,0 +1,25 @@
+{
+  "orgName": "Feature Scratch Org",
+  "country": "DE",
+  "adminEmail": "activation@hundw.com",
+  "edition": "Enterprise",
+  "hasSampleData": false,
+  "language": "en_US",
+  "features": ["LightningServiceConsole", "PersonAccounts"],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
+    },
+    "securitySettings": {
+      "passwordPolicies": {
+        "enableSetPasswordInApi": true
+      }
+    },
+    "mobileSettings": {
+      "enableS1EncryptedStoragePref2": false
+    },
+    "languageSettings": {
+      "enableTranslationWorkbench": "true"
+    }
+  }
+}
