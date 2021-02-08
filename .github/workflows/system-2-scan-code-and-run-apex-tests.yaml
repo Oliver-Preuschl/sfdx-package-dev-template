@@ -1,0 +1,99 @@
+# Unique name for this workflow
+name: System - 2 - Scan Code & Run Apex Tests
+
+# Definition when the workflow should run
+on:  
+  push:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "force-app/**"
+
+# Jobs to be executed
+jobs:
+  run-sfdx-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+          sfdx plugins:install @salesforce/sfdx-scanner
+
+      # Cache node_modules to speed up the process
+      - name: Restore node_modules cache
+        id: cache-npm
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ env.cache-name }}-
+            npm-
+
+      # Store secret for dev hub
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      # Authenticate dev hub
+      - name: "Authenticate Dev Hub"
+        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      # Install npm dependencies for Prettier and Jest
+      - name: "Install npm dependencies"
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # Prettier formatting
+      - name: "Code formatting"
+        run: sfdx scanner:run --target "force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error
+
+  run-apex-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+
+      # Store secret for dev hub
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      # Authenticate dev hub
+      - name: "Authenticate Dev Hub"
+        run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      # Create scratch org
+      - name: "Create scratch org"
+        run: "sfdx force:org:create -f config/project-scratch-def.json -a scratchorg -s -d 1"
+
+      # Deploy source to scratch org
+      - name: "Push source"
+        run: "sfdx force:source:push"
+
+      # Run Apex tests in scratch org
+      - name: "Run Apex tests"
+        run: "sfdx force:apex:test:run -c -r human -d ./tests/apex -w 20"
+
+      # Housekeeping
+      - name: "Delete scratch org"
+        if: always()
+        run: "sfdx force:org:delete -p -u scratchorg"
