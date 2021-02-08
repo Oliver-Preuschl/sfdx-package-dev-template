@@ -1,15 +1,16 @@
 # Unique name for this workflow
-name: System - 1 - Create Package
+name: System - 4 - Promote Package Version
 
 # Definition when the workflow should run
 on:
-  create:
+  release:
+    types: [published]
     branches:
       - master
 
 # Jobs to be executed
 jobs:
-  create-package:
+  create-package-version:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
@@ -25,6 +26,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+
       # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
@@ -34,15 +36,8 @@ jobs:
       - name: "Authenticate Dev Hub"
         run: "sfdx force:auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      # Create Package
-      - name: "Create new package"
-        run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Unlocked"
-
-      # Commit Changes
-      - name: "Commit Changes"
+      # Promote Package Version
+      - name: "Promote Package Version"
         run: |
-          git config user.name $GITHUB_ACTOR
-          git config user.email activation@hundw.com
-          git add sfdx-project.json
-          git commit -m "Package created"
-          git push
+          latestVersion=$(sfdx force:package:version:list -p ${{ env.GITHUB_REPOSITORY_NAME }} -o CreatedDate --concise | tail -1 | awk '{print $3}')
+          "sfdx force:package:version:promote --package $latestVersion
