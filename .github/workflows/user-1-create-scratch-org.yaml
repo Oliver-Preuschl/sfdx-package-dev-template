@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
+      - uses: nelonoel/branch-name@v1.0.1
 
       # Checkout the code
       - name: "Checkout source code"
@@ -25,6 +26,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          
       # Store devhub secret in file
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
@@ -44,13 +46,15 @@ jobs:
         run: |
           output=$(sfdx force:org:display -u scratchorg --verbose | grep -o "force://.*")
           echo "::set-output name=auth_url::$output"
+          
       # Get AuthUrlSecretName
       - name: "Get Auth URL Secret Name"
         id: get_auth_url_secret_name
         run: |
-          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}';
+          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_${BRANCH_NAME}';
           authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
           echo "::set-output name=auth_url_secret_name::$authurlsecretname"
+          
       # Create SCRATCH_ORG_AUTH_URL Secret
       - name: "Create SCRATCH_ORG_AUTH_URL Secret"
         uses: gliech/create-github-secret-action@v1
