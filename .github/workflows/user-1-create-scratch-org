@@ -1,0 +1,55 @@
+# Unique name for this workflow
+name: User - 1 - Create Scratch Org
+
+# Definition when the workflow should run
+on:
+  workflow_dispatch
+
+# Jobs to be executed
+jobs:
+  CreateScratchOrg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: FranzDiebold/github-env-vars-action@v1.2.1
+
+      # Checkout the code
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+      # Store devhub secret in file
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      # Authenticate dev hub
+      - name: "Authenticate Dev Hub"
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      # Create scratch org
+      - name: "Create scratch org"
+        run: "sfdx force:org:create -f config/project-scratch-def.json orgName=${{ env.GITHUB_REPOSITORY_NAME }} -a scratchorg --nonamespace -d 30"
+
+      # Get Scratch Org AuthURL
+      - name: "Get Scratch Org AuthURL"
+        id: get_scratch_org_auth_url
+        run: |
+          output=$(sfdx force:org:display -u scratchorg --verbose | grep -o "force://.*")
+          echo "::set-output name=auth_url::$output"
+      # Create SCRATCH_ORG_AUTH_URL Secret
+      - name: "Create SCRATCH_ORG_AUTH_URL Secret"
+        uses: gliech/create-github-secret-action@v1
+        with:
+          name: SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}
+          value: ${{ steps.get_scratch_org_auth_url.outputs.auth_url }}
+          pa_token: ${{ secrets.PA_TOKEN }}
+
+      # Display scratch org login URL
+      - name: "Display Scratch Org Login Link"
+        run: "sfdx force:org:open -u=scratchorg"
