@@ -37,7 +37,7 @@ jobs:
 
       # Create scratch org
       - name: "Create scratch org"
-        run: "sfdx force:org:create -f config/project-scratch-def.json orgName=${{ env.GITHUB_REPOSITORY_NAME }} -a scratchorg --nonamespace -d 30"
+        run: "sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -a scratchorg --nonamespace -d 30"
 
       # Get Scratch Org AuthURL
       - name: "Get Scratch Org AuthURL"
