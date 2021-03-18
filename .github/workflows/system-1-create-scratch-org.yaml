@@ -55,7 +55,7 @@ jobs:
         if: env.GITHUB_REF_NAME != 'master'
         id: get_auth_url_secret_name
         run: |
-          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_{{ env.GITHUB_REF_NAME }}'
+          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
           authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
           echo "::set-output name=auth_url_secret_name::$authurlsecretname"
           
