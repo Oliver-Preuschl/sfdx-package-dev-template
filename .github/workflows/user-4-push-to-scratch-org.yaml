@@ -3,9 +3,7 @@ name: User - 4 - Push Changes to Scratch Org
 
 # Definition when the workflow should run
 on:
-  workflow_dispatch:
-    branches-ignore:
-      - master
+  workflow_dispatch
 
 # Jobs to be executed
 jobs:
@@ -16,10 +14,12 @@ jobs:
 
       # Checkout the code
       - name: "Checkout source code"
+        if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
 
       # Install Salesforce CLI
       - name: Install Salesforce CLI
+        if: success()
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -28,15 +28,18 @@ jobs:
           
       # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: success()
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
+        if: success()
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
         
       # Get AuthUrlSecretName
       - name: "Get Auth URL Secret Name"
+        if: success()
         id: get_auth_url_secret_name
         run: |
           authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_{{ env.GITHUB_REF_NAME }}'
@@ -45,6 +48,7 @@ jobs:
 
       # Store secret for scratch org
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
+        if: success()
         env:
           SCRATCH_ORG_AUTH_URL: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
         shell: bash
@@ -54,8 +58,10 @@ jobs:
           
       # Authenticate scratch org
       - name: "Authenticate Scratch Org"
+        if: success()
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
       # Push Source to ScratchOrg
       - name: "Push Source to ScratchOrg"
+        if: success()
         run: "sfdx force:source:push"
