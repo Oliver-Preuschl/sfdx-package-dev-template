@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: User - 3 - Push Changes to Scratch Org
+name: User - 4 - Push Changes to Scratch Org
 
 # Definition when the workflow should run
 on:
