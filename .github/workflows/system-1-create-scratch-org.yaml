@@ -16,10 +16,12 @@ jobs:
 
       # Checkout the code
       - name: "Checkout source code"
+        if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
 
       # Install Salesforce CLI
       - name: Install Salesforce CLI
+        if: success()
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -28,19 +30,23 @@ jobs:
           
       # Store devhub secret in file
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: success()
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
+        if: success()
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       # Create scratch org
       - name: "Create scratch org"
+        if: success()
         run: "sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -a scratchorg --nonamespace -d 30"
 
       # Get Scratch Org AuthURL
       - name: "Get Scratch Org AuthURL"
+        if: success()
         id: get_scratch_org_auth_url
         run: |
           output=$(sfdx force:org:display -u scratchorg --verbose | grep -o "force://.*")
@@ -48,6 +54,7 @@ jobs:
           
       # Get AuthUrlSecretName
       - name: "Get Auth URL Secret Name"
+        if: success()
         id: get_auth_url_secret_name
         run: |
           authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_{{ env.GITHUB_REF_NAME }}'
@@ -56,6 +63,7 @@ jobs:
           
       # Create SCRATCH_ORG_AUTH_URL Secret
       - name: "Create SCRATCH_ORG_AUTH_URL Secret"
+        if: success()
         uses: gliech/create-github-secret-action@v1
         with:
           name: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
@@ -64,4 +72,5 @@ jobs:
 
       # Display scratch org login URL
       - name: "Display Scratch Org Login Link"
+        if: success()
         run: "sfdx force:org:open -u=scratchorg"
