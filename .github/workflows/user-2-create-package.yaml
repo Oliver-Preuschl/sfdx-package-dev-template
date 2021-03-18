@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: User - 1 - Create Package
+name: User - 2 - Create Package
 
 # Definition when the workflow should run
 on:
