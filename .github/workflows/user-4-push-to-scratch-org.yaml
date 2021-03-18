@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
+      - uses: nelonoel/branch-name@v1.0.1
 
       # Checkout the code
       - name: "Checkout source code"
@@ -25,6 +26,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          
       # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
@@ -33,15 +35,24 @@ jobs:
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        
+      # Get AuthUrlSecretName
+      - name: "Get Auth URL Secret Name"
+        id: get_auth_url_secret_name
+        run: |
+          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_${BRANCH_NAME}';
+          authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
+          echo "::set-output name=auth_url_secret_name::$authurlsecretname"
 
       # Store secret for scratch org
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         env:
-          SCRATCH_ORG_AUTH_URL: SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}
+          SCRATCH_ORG_AUTH_URL: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
         shell: bash
         run: |
           authurl=${{ secrets[env.SCRATCH_ORG_AUTH_URL] }}
           echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+          
       # Authenticate scratch org
       - name: "Authenticate Scratch Org"
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
