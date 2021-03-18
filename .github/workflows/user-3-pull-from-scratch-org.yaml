@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: User - 2 - Pull Changes from Scratch Org
+name: User - 3 - Pull Changes from Scratch Org
 
 # Definition when the workflow should run
 on:
