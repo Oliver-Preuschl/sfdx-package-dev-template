@@ -3,9 +3,7 @@ name: User - 2 - Create Package
 
 # Definition when the workflow should run
 on:
-  workflow_dispatch:
-    branches:
-      - master
+  workflow_dispatch
 
 # Jobs to be executed
 jobs:
@@ -16,10 +14,12 @@ jobs:
 
       # Checkout the code
       - name: "Checkout source code"
+        if: env.GITHUB_REF_NAME == 'master'
         uses: actions/checkout@v2
 
       # Install Salesforce CLI
       - name: Install Salesforce CLI
+        if: env.GITHUB_REF_NAME == 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -27,19 +27,23 @@ jobs:
           ./sfdx-cli/install
       # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: env.GITHUB_REF_NAME == 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
+        if: env.GITHUB_REF_NAME == 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       # Create Package Version
       - name: "Create new package version"
+        if: env.GITHUB_REF_NAME == 'master'
         run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Unlocked"
 
       # Commit Changes
       - name: "Commit Changes"
+        if: env.GITHUB_REF_NAME == 'master'
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
