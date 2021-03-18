@@ -1,0 +1,44 @@
+# Unique name for this workflow
+name: User - 5 - Create Release
+
+# Definition when the workflow should run
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: "Version Name"
+        required: true
+
+# Jobs to be executed
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: FranzDiebold/github-env-vars-action@v1.2.1
+
+      - name: Checkout code
+        if: env.GITHUB_REF_NAME == 'master'
+        uses: actions/checkout@v2
+        
+      - name: Promote Package Version
+        if: env.GITHUB_REF_NAME == 'master'
+        id: promote_package_version
+        run: |
+          latestVersion=$(sfdx force:package:version:list -p ${{ env.GITHUB_REPOSITORY_NAME }} -o CreatedDate --concise | tail -1 | awk '{print $3}')
+          "sfdx force:package:version:promote --package $latestVersion
+          echo "::set-output name=latest_package_version_id::$latestVersion"
+        
+      - name: Create Release
+        if: env.GITHUB_REF_NAME == 'master'
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.versionName }}"
+          release_name: Release ${{ github.event.inputs.versionName }}"
+          body: |
+            /packaging/installPackage.apexp?p0=${{ steps.promote_package_version.outputs.latest_package_version_id }}
+          draft: false
+          prerelease: false
