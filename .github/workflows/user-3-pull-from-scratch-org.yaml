@@ -23,7 +23,7 @@ jobs:
 
       # Install Salesforce CLI
       - name: Install Salesforce CLI
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -32,18 +32,18 @@ jobs:
           
       # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       # Authenticate dev hub
       - name: "Authenticate Dev Hub"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
         
       # Get AuthUrlSecretName
       - name: "Get Auth URL Secret Name"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         id: get_auth_url_secret_name
         run: |
           authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_{{ env.GITHUB_REF_NAME }}'
@@ -52,7 +52,7 @@ jobs:
 
       # Store secret for scratch org
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         env:
           SCRATCH_ORG_AUTH_URL: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
         shell: bash
@@ -62,17 +62,17 @@ jobs:
           
       # Authenticate scratch org
       - name: "Authenticate Scratch Org"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
       # Pull Source from ScratchOrg
       - name: "Pull Source from ScratchOrg"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx force:source:pull"
 
       # Commit Changes
       - name: "Commit Changes"
-        if: success()
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
