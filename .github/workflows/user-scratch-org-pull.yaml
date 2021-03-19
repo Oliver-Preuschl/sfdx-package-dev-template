@@ -1,43 +1,39 @@
-# Unique name for this workflow
-name: User - 4 - Push Changes to Scratch Org
+name: "user:source:pull [feature]"
 
-# Definition when the workflow should run
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      commitMessage:
+        description: "Commit Message"
+        required: true
 
-# Jobs to be executed
 jobs:
-  PushSourceToScratchOrg:
+  PullSourceFromScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
 
-      # Checkout the code
       - name: "Checkout source code"
         if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
 
-      # Install Salesforce CLI
-      - name: Install Salesforce CLI
+      - name: "Install Salesforce CLI"
         if: env.GITHUB_REF_NAME != 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
-          
-      # Store secret for dev hub
+
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: env.GITHUB_REF_NAME != 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
-      # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
-        
-      # Get AuthUrlSecretName
+
       - name: "Get Auth URL Secret Name"
         if: env.GITHUB_REF_NAME != 'master'
         id: get_auth_url_secret_name
@@ -46,7 +42,6 @@ jobs:
           authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
           echo "::set-output name=auth_url_secret_name::$authurlsecretname"
 
-      # Store secret for scratch org
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         if: env.GITHUB_REF_NAME != 'master'
         env:
@@ -55,13 +50,20 @@ jobs:
         run: |
           authurl=${{ secrets[env.SCRATCH_ORG_AUTH_URL] }}
           echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
-          
-      # Authenticate scratch org
+
       - name: "Authenticate Scratch Org"
         if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
-      # Push Source to ScratchOrg
-      - name: "Push Source to ScratchOrg"
+      - name: "Pull Source from ScratchOrg"
         if: env.GITHUB_REF_NAME != 'master'
-        run: "sfdx force:source:push"
+        run: "sfdx force:source:pull"
+
+      - name: "Commit Changes"
+        if: env.GITHUB_REF_NAME != 'master'
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add force-app
+          git commit -m "${{ github.event.inputs.commitMessage }}"
+          git push

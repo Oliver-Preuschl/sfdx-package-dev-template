@@ -1,7 +1,5 @@
-# Unique name for this workflow
-name: User - 5 - Create Release
+name: "user:package:version:promote [master]"
 
-# Definition when the workflow should run
 on:
   workflow_dispatch:
     inputs:
@@ -9,7 +7,6 @@ on:
         description: "Version Name"
         required: true
 
-# Jobs to be executed
 jobs:
   build:
     name: Create Release
@@ -17,30 +14,27 @@ jobs:
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
 
-      - name: Checkout code
+      - name: "Checkout code"
         if: env.GITHUB_REF_NAME == 'master'
         uses: actions/checkout@v2
-        
-      # Install Salesforce CLI
-      - name: Install Salesforce CLI
+
+      - name: "Install Salesforce CLI"
         if: env.GITHUB_REF_NAME == 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
-          
-      # Store devhub secret in file
+
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: env.GITHUB_REF_NAME == 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
-      # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         if: env.GITHUB_REF_NAME == 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
-        
+
       - name: "Promote Package Version"
         if: env.GITHUB_REF_NAME == 'master'
         id: promote_package_version
@@ -48,7 +42,7 @@ jobs:
           latestVersion=$(sfdx force:package:version:list -p ${{ env.GITHUB_REPOSITORY_NAME }} -o CreatedDate --concise | tail -1 | awk '{print $3}')
           sfdx force:package:version:promote --package $latestVersion
           echo "::set-output name=latest_package_version_id::$latestVersion"
-        
+
       - name: "Create Release"
         if: env.GITHUB_REF_NAME == 'master'
         id: create_release

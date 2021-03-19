@@ -1,7 +1,5 @@
-# Unique name for this workflow
-name: System - 2 - Scan Code & Run Apex Tests
+name: "system:ci:scan-code-and-run-apex-tests [pull-request:open:feature]"
 
-# Definition when the workflow should run
 on:
   pull_request:
     types: [opened]
@@ -10,20 +8,17 @@ on:
     paths:
       - "force-app/**"
 
-# Jobs to be executed
 jobs:
   run-sfdx-scanner:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
       - name: "Checkout source code"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         uses: actions/checkout@v2
 
-      # Install Salesforce CLI
-      - name: Install Salesforce CLI
+      - name: "Install Salesforce CLI"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
@@ -34,8 +29,7 @@ jobs:
           ./sfdx-cli/install
           sfdx plugins:install @salesforce/sfdx-scanner
 
-      # Cache node_modules to speed up the process
-      - name: Restore node_modules cache
+      - name: "Restore node_modules cache"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
@@ -48,7 +42,6 @@ jobs:
             npm-${{ env.cache-name }}-
             npm-
 
-      # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
@@ -56,21 +49,18 @@ jobs:
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
-      # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      # Install npm dependencies for Prettier and Jest
       - name: "Install npm dependencies"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
         if: ((env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
         run: npm ci
 
-      # Prettier formatting
       - name: "Code formatting"
         env:
           skip_apex_tests: ${{ secrets.skip_scan }}
@@ -80,15 +70,13 @@ jobs:
   run-apex-tests:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
       - name: "Checkout source code"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         uses: actions/checkout@v2
 
-      # Install Salesforce CLI
-      - name: Install Salesforce CLI
+      - name: "Install Salesforce CLI"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
@@ -98,7 +86,6 @@ jobs:
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
 
-      # Store secret for dev hub
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
@@ -106,35 +93,30 @@ jobs:
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
-      # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      # Create scratch org
       - name: "Create scratch org"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx force:org:create -f config/project-scratch-def.json -a scratchorg -s -d 1"
 
-      # Deploy source to scratch org
       - name: "Push source"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx force:source:push"
 
-      # Run Apex tests in scratch org
       - name: "Run Apex tests"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx force:apex:test:run -c -r human -d ./tests/apex -w 20"
 
-      # Housekeeping
       - name: "Delete scratch org"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}

@@ -1,56 +1,45 @@
-# Unique name for this workflow
-name: User - 1 - Create Scratch Org
+name: "system:scratch-org:create [create:feature]"
 
-# Definition when the workflow should run
-on:
-  workflow_dispatch
+on: create
 
-# Jobs to be executed
 jobs:
   CreateScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
 
-      # Checkout the code
       - name: "Checkout source code"
         if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
 
-      # Install Salesforce CLI
-      - name: Install Salesforce CLI
+      - name: "Install Salesforce CLI"
         if: env.GITHUB_REF_NAME != 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
-          
-      # Store devhub secret in file
+
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: env.GITHUB_REF_NAME != 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
-      # Authenticate dev hub
       - name: "Authenticate Dev Hub"
         if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      # Create scratch org
       - name: "Create scratch org"
         if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername -a scratchorg --nonamespace -d 30"
 
-      # Get Scratch Org AuthURL
       - name: "Get Scratch Org AuthURL"
         if: env.GITHUB_REF_NAME != 'master'
         id: get_scratch_org_auth_url
         run: |
           output=$(sfdx force:org:display -u scratchorg --verbose | grep -o "force://.*")
           echo "::set-output name=auth_url::$output"
-          
-      # Get AuthUrlSecretName
+
       - name: "Get Auth URL Secret Name"
         if: env.GITHUB_REF_NAME != 'master'
         id: get_auth_url_secret_name
@@ -58,8 +47,7 @@ jobs:
           authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
           authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
           echo "::set-output name=auth_url_secret_name::$authurlsecretname"
-          
-      # Create SCRATCH_ORG_AUTH_URL Secret
+
       - name: "Create SCRATCH_ORG_AUTH_URL Secret"
         if: env.GITHUB_REF_NAME != 'master'
         uses: gliech/create-github-secret-action@v1
