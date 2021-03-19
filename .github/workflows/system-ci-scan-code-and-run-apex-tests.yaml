@@ -1,4 +1,4 @@
-name: "system:ci:scan-code-and-run-apex-tests [pull-request:open:feature]"
+name: "system:ci:scan-code-and-run-apex-tests"
 
 on:
   pull_request:
