@@ -1,0 +1,43 @@
+name: "user:package:managed:create [master]"
+
+on: workflow_dispatch
+
+jobs:
+  create-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: FranzDiebold/github-env-vars-action@v1.2.1
+
+      - name: "Checkout source code"
+        if: env.GITHUB_REF_NAME == 'master'
+        uses: actions/checkout@v2
+
+      - name: "Install Salesforce CLI"
+        if: env.GITHUB_REF_NAME == 'master'
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: env.GITHUB_REF_NAME == 'master'
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      - name: "Authenticate Dev Hub"
+        if: env.GITHUB_REF_NAME == 'master'
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      - name: "Create new package"
+        if: env.GITHUB_REF_NAME == 'master'
+        run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Managed"
+
+      - name: "Commit Changes"
+        if: env.GITHUB_REF_NAME == 'master'
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add sfdx-project.json
+          git commit -m "Package created"
+          git push

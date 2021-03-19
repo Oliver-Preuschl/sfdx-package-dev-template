@@ -1,4 +1,4 @@
-name: "user:package:create [master]"
+name: "user:package:unlocked:orgdependent:create [master]"
 
 on: workflow_dispatch
 
@@ -29,9 +29,9 @@ jobs:
         if: env.GITHUB_REF_NAME == 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      - name: "Create new package version"
+      - name: "Create new package"
         if: env.GITHUB_REF_NAME == 'master'
-        run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Unlocked"
+        run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Unlocked --orgdependent"
 
       - name: "Commit Changes"
         if: env.GITHUB_REF_NAME == 'master'
