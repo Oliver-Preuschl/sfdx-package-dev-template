@@ -31,7 +31,15 @@ jobs:
 
       - name: "Create new package"
         if: env.GITHUB_REF_NAME == 'master'
-        run: "sfdx force:package:create --name ${{ env.GITHUB_REPOSITORY_NAME }} --path force-app --packagetype Unlocked --orgdependent"
+        run: 'sfdx force:package:create --name "${{ env.GITHUB_REPOSITORY_NAME }}" --path force-app --packagetype Unlocked --orgdependent'
+
+      - name: "Create PACKAGE_NAME Secret"
+        if: env.GITHUB_REF_NAME != 'master'
+        uses: gliech/create-github-secret-action@v1
+        with:
+          name: PACKAGE_NAME
+          value: ${{ env.GITHUB_REPOSITORY_NAME }}
+          pa_token: ${{ secrets.PA_TOKEN }}
 
       - name: "Commit Changes"
         if: env.GITHUB_REF_NAME == 'master'

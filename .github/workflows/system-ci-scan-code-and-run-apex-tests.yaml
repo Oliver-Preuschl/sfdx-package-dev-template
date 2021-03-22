@@ -61,10 +61,10 @@ jobs:
         if: ((env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
         run: npm ci
 
-      - name: "Code formatting"
+      - name: "Run sfdx scanner"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         run: sfdx scanner:run --target "force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error
 
   run-apex-tests:

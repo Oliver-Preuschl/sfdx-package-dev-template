@@ -31,7 +31,7 @@ jobs:
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Create new package version"
-        run: "sfdx force:package:version:create --package ${{ env.GITHUB_REPOSITORY_NAME }} --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10"
+        run: 'sfdx force:package:version:create --package "${{ secrets.PACKAGE_NAME }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
 
       - name: "Commit Changes"
         run: |
