@@ -40,7 +40,7 @@ jobs:
         id: promote_package_version
         run: |
           latestVersion=$(sfdx force:package:version:list -p "${{ secrets.PACKAGE_NAME }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
-          sfdx force:package:version:promote --package $latestVersion
+          sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
 
       - name: "Create Release"
