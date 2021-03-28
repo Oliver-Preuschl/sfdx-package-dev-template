@@ -44,7 +44,7 @@ jobs:
 
       - name: "Create scratch org"
         if: ${{ startsWith(env.GITHUB_REF_NAME, 'admin') && steps.display_scratch_org.outcome == 'failure' }}
-        run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --targetusername="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 30'
+        run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 30'
 
       - name: "Get Scratch Org AuthURL"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
