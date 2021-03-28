@@ -1,4 +1,4 @@
-name: "system:ci:scan-code-and-run-apex-tests"
+name: "system:ci:scan-code-and-run-tests"
 
 on:
   pull_request:
@@ -14,14 +14,14 @@ jobs:
     steps:
       - name: "Checkout source code"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -31,8 +31,8 @@ jobs:
 
       - name: "Restore node_modules cache"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         id: cache-npm
         uses: actions/cache@v1
         with:
@@ -44,21 +44,21 @@ jobs:
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Install npm dependencies"
         env:
-          skip_apex_tests: ${{ secrets.skip_scan }}
-        if: ((env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
+          skip_scan: ${{ secrets.skip_scan }}
+        if: ((env.skip_scan == '') || (env.skip_scan == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
         run: npm ci
 
       - name: "Run sfdx scanner"
@@ -122,3 +122,37 @@ jobs:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx force:org:delete -p -u scratchorg"
+
+  run-lwc-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        env:
+          skip_lwc_tests: ${{ secrets.skip_lwc_tests }}
+        if: (env.skip_lwc_tests == '') || (env.skip_lwc_tests == 'false')
+        uses: actions/checkout@v2
+
+      - name: "Restore node_modules cache"
+        env:
+          skip_lwc_tests: ${{ secrets.skip_lwc_tests }}
+        if: (env.skip_lwc_tests == '') || (env.skip_lwc_tests == 'false')
+        id: cache-npm
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ env.cache-name }}-
+            npm-
+
+      - name: "Install npm dependencies"
+        env:
+          skip_lwc_tests: ${{ secrets.skip_lwc_tests }}
+        if: ((env.skip_lwc_tests == '') || (env.skip_lwc_tests == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
+        run: npm ci
+
+      - name: "Run LWC tests"
+        env:
+          skip_lwc_tests: ${{ secrets.skip_lwc_tests }}
+          if: (env.skip_lwc_tests == '') || (env.skip_lwc_tests == 'false')
+        run: npm run test:unit:coverage
