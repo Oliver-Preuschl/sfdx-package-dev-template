@@ -29,12 +29,12 @@ jobs:
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      - name: "Get ScratchOrg Secret Name"
+      - name: "Get ScratchOrg Name"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         id: get_scratch_org_name
         run: |
           scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
-          echo "::set-output name=scratch_org_name::scratchorgname"
+          echo "::set-output name=scratch_org_name::$scratchorgname"
 
       - name: "Display existing Scratch Org Login Link"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
