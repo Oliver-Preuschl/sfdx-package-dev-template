@@ -155,4 +155,4 @@ jobs:
         env:
           skip_lwc_tests: ${{ secrets.skip_lwc_tests }}
           if: (env.skip_lwc_tests == '') || (env.skip_lwc_tests == 'false')
-        run: npm run test:unit:coverage
+        run: npm run test:unit:coverage --passWithNoTests

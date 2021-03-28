@@ -34,7 +34,7 @@ jobs:
         run: 'sfdx force:package:create --name "${{ env.GITHUB_REPOSITORY_NAME }}" --path force-app --packagetype Unlocked'
 
       - name: "Create PACKAGE_NAME Secret"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: env.GITHUB_REF_NAME == 'master'
         uses: gliech/create-github-secret-action@v1
         with:
           name: PACKAGE_NAME
