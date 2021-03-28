@@ -36,9 +36,10 @@ jobs:
           scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
           echo "::set-output name=scratch_org_name::scratchorgname"
 
-      - name: "Display Scratch Org Login Link"
+      - name: "Display existing Scratch Org Login Link"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         id: display_scratch_org
+        continue-on-error: true
         run: 'sfdx force:org:open --targetusername="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
       - name: "Create scratch org"
