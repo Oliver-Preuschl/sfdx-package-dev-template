@@ -50,8 +50,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.inputs.versionName }}"
-          release_name: Release ${{ github.event.inputs.versionName }}"
+          tag_name: "${{ github.event.inputs.versionName }}"
+          release_name: "Release ${{ github.event.inputs.versionName }}"
           body: |
             /packaging/installPackage.apexp?p0=${{ steps.promote_package_version.outputs.latest_package_version_id }}
           draft: false
