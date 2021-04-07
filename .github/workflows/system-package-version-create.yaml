@@ -4,8 +4,12 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "force-app/**"
+    paths-ignore:
+      - ".**"
+      - "config/**"
+      - "README.md"
+      - "package.json"
+      - "package-lock.json"
 
 jobs:
   create-package-version:
