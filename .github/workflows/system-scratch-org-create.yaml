@@ -72,3 +72,7 @@ jobs:
       - name: "Display Scratch Org Login Link"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: 'sfdx force:org:open -u="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+
+      - name: "Push Source to ScratchOrg"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: "sfdx force:source:push"
