@@ -1,4 +1,4 @@
-![Code Scan & Apex Test Results](../../workflows/system:ci:scan-code-and-run-apex-tests/badge.svg)
+![Code Scan & Apex Test Results](../../actions/workflows/system-ci-scan-code-and-run-tests.yaml/badge.svg)
 
 ## About
 
