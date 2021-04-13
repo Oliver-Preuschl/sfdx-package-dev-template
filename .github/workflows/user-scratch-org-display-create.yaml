@@ -36,6 +36,27 @@ jobs:
           scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
           echo "::set-output name=scratch_org_name::$scratchorgname"
 
+      - name: "Get Auth URL Secret Name"
+        if: env.GITHUB_REF_NAME != 'master'
+        id: get_auth_url_secret_name
+        run: |
+          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ steps.get_scratch_org_name.outputs.scratch_org_name }}'
+          authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
+          echo "::set-output name=auth_url_secret_name::$authurlsecretname"
+
+      - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
+        if: ${{ env.GITHUB_REF_NAME != 'master' && steps.get_auth_url_secret_name.outcome != 'failure' }}
+        env:
+          SCRATCH_ORG_AUTH_URL: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
+        shell: bash
+        run: |
+          authurl=${{ secrets[env.SCRATCH_ORG_AUTH_URL] }}
+          echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+
+      - name: "Authenticate Scratch Org"
+        if: ${{ env.GITHUB_REF_NAME != 'master' && steps.get_auth_url_secret_name.outcome != 'failure' }}
+        run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+
       - name: "Display existing Scratch Org Login Link"
         if: env.GITHUB_REF_NAME != 'master'
         id: display_scratch_org
@@ -47,22 +68,14 @@ jobs:
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 30'
 
       - name: "Get Scratch Org AuthURL"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ env.GITHUB_REF_NAME != 'master' && steps.display_scratch_org.outcome == 'failure' }}
         id: get_scratch_org_auth_url
         run: |
           output=$(sfdx force:org:display --targetusername="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --verbose | grep -o "force://.*")
           echo "::set-output name=auth_url::$output"
 
-      - name: "Get Auth URL Secret Name"
-        if: env.GITHUB_REF_NAME != 'master'
-        id: get_auth_url_secret_name
-        run: |
-          authurlsecretname='SCRATCH_ORG_AUTH_URL_${{ env.GITHUB_REPOSITORY_NAME }}_${{ env.GITHUB_REF_NAME }}'
-          authurlsecretname="${authurlsecretname//[^0-9a-zA-Z_]/_}"
-          echo "::set-output name=auth_url_secret_name::$authurlsecretname"
-
       - name: "Create SCRATCH_ORG_AUTH_URL Secret"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ env.GITHUB_REF_NAME != 'master' && steps.display_scratch_org.outcome == 'failure' }}
         uses: gliech/create-github-secret-action@v1
         with:
           name: ${{ steps.get_auth_url_secret_name.outputs.auth_url_secret_name }}
@@ -71,7 +84,7 @@ jobs:
 
       - name: "Display Scratch Org Login Link"
         if: env.GITHUB_REF_NAME != 'master'
-        run: 'sfdx force:org:open -u="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+        run: 'sfdx force:org:open --targetusername="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
       - name: "Push Source to ScratchOrg"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
