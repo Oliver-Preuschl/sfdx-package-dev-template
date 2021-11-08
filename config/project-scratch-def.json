@@ -19,7 +19,7 @@
       "enableS1EncryptedStoragePref2": false
     },
     "languageSettings": {
-      "enableTranslationWorkbench": "true"
+      "enableTranslationWorkbench": true
     }
   }
 }
