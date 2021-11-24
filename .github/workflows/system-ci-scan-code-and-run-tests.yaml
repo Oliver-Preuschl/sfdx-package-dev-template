@@ -85,6 +85,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx plugins:install texei-sfdx-plugin
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         env:
@@ -99,11 +100,30 @@ jobs:
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
+      - name: "Get ScratchOrg Name"
+        if: env.GITHUB_REF_NAME != 'master'
+        id: get_scratch_org_name
+        run: |
+          scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_master'
+          echo "::set-output name=scratch_org_name::$scratchorgname"
+
       - name: "Create scratch org"
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
-        run: "sfdx force:org:create -f config/project-scratch-def.json -a scratchorg -s -d 1"
+        run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 1'
+
+      - name: "Install SFDX-Project Dependencies"
+        env:
+            skip_apex_tests: ${{ secrets.skip_apex_tests }}
+        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+        run: 'sfdx texei:package:dependencies:install -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+
+      - name: "Install SFDX-NPM Dependencies"
+        env:
+          skip_apex_tests: ${{ secrets.skip_apex_tests }}
+        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
+        run: 'npm run install:dependencies'
 
       - name: "Push source"
         env:
@@ -121,7 +141,7 @@ jobs:
         env:
           skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
-        run: "sfdx force:org:delete -p -u scratchorg"
+        run: 'sfdx force:org:delete -p -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
   run-lwc-tests:
     runs-on: ubuntu-latest

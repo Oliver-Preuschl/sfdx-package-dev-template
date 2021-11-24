@@ -19,6 +19,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx plugins:install texei-sfdx-plugin
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
@@ -72,6 +73,14 @@ jobs:
       - name: "Display Scratch Org Login Link"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: 'sfdx force:org:open -u="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+
+      - name: "Install SFDX-Project Dependencies"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: 'sfdx texei:package:dependencies:install -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+
+      - name: "Install SFDX-NPM Dependencies"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: 'npm run install:dependencies'
 
       - name: "Push Source to ScratchOrg"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
