@@ -27,7 +27,16 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+
+      - name: "Install SFDX Plugins"
+        env:
+          skip_scan: ${{ secrets.skip_scan }}
+        if: (env.skip_scan == '') || (env.skip_scan == 'false')
+        run: |
           sfdx plugins:install @salesforce/sfdx-scanner
+          mkdir $HOME/.config/sfdx/
+          echo '["texei-sfdx-plugin"]' > $HOME/.config/sfdx/unsignedPluginAllowList.json
+          sfdx plugins:install texei-sfdx-plugin
 
       - name: "Restore node_modules cache"
         env:
@@ -115,7 +124,7 @@ jobs:
 
       - name: "Install SFDX-Project Dependencies"
         env:
-            skip_apex_tests: ${{ secrets.skip_apex_tests }}
+          skip_apex_tests: ${{ secrets.skip_apex_tests }}
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: 'sfdx texei:package:dependencies:install -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
