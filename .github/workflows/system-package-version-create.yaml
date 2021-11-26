@@ -35,13 +35,38 @@ jobs:
       - name: "Authenticate Dev Hub"
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      - name: "Create new package version"
-        run: 'sfdx force:package:version:create --package "${{ secrets.PACKAGE_NAME }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
+      - name: "Get Package Name"
+        id: get_package_name
+        run: |
+          chmod +x ./.github/scripts/getPackageAttribute.js
+          name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          echo "::set-output name=package_name::$name"
+
+      - name: "Get Package Password"
+        id: get_package_password
+        run: |
+          chmod +x ./.github/scripts/getPackageAttribute.js
+          password='$(node ./.github/scripts/getPackageAttribute.js password)'
+          echo "::set-output name=package_password::$password"
+
+      - name: "Create new package version - with password"
+        if: ${{ steps.get_package_password.outputs.package_password != '' }}
+        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
+
+      - name: "Create new package version - without password"
+        if: ${{ steps.get_package_password.outputs.package_password == '' }}
+        run: 'sfdx force:package:version:create --package "${{ steps.get_package_password.outputs.package_name }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
+
+      - name: "Save Package-Versions-JSON"
+        id: save_package_versions
+        run: |
+          chmod +x ./.github/scripts/getPackageVersions.js
+          node ./.github/scripts/getPackageVersions.js > ./sfdx-package-versions.json
 
       - name: "Commit Changes"
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
-          git add sfdx-project.json
+          git add sfdx-project.json sfdx-package-versions.json
           git commit -m "Package Version created"
           git push

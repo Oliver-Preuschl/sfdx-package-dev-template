@@ -16,15 +16,14 @@
 
 "use strict";
 
-const fs = require("fs");
+const { getPackageConfig } = require("../libs/configProvider.js");
 const { execCommand } = require("../libs/sfdxExecutor.js");
 
 (async function () {
   const userName = process.argv[2];
 
-  var dependencies = JSON.parse(
-    fs.readFileSync("./sfdx-project-dependencies.json", "utf8")
-  );
+  const packageConfig = getPackageConfig();
+  const dependencies = packageConfig.dependencies || [];
 
   let numberOfPackages = 0;
   for (let dependency of dependencies) {
