@@ -35,11 +35,18 @@ jobs:
         if: env.GITHUB_REF_NAME == 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
+      - name: "Get Package Name"
+        id: get_package_name
+        run: |
+          chmod +x ./.github/scripts/getPackageAttribute.js
+          name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          echo "::set-output name=package_name::$name"
+
       - name: "Promote Package Version"
         if: env.GITHUB_REF_NAME == 'master'
         id: promote_package_version
         run: |
-          latestVersion=$(sfdx force:package:version:list -p "${{ secrets.PACKAGE_NAME }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
+          latestVersion=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
           sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
 

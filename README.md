@@ -7,12 +7,11 @@ This repository supports the development of sfdx second-generation packages by l
 ## Getting started
 
 All you have to do to get started is to create a new repository by using this repository as a template.
-However, since the workflows used in the repository need access to your Salesforce Dev Hub and your Github Secrets, you will need to set up the following secrets.
+However, since the workflows used in the repository need access to your Salesforce Dev Hub you will need to set up the following secret.
 
 |   Secret Name   | Secret Value                                                                                                                                                                                                                                                                                                                                                                                       |
 | :-------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | DEVHUB_AUTH_URL | The Sfdx Auth Url. You can get this from the SFDX CLI with the following command: sfdx force:org:display --targetusername=<your dev hub username> --verbose                                                                                                                                                                                                                                        |
-|    PA_TOKEN     | Your personal access token with the repo scope. This is necessary to save sfdx related data like the package name in Github secrets for later usage. For more information on how to create a personal access token please refere to the following Github article: [Creating a personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). |
 
 ## Features
 
