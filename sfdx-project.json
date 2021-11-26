@@ -1,8 +1,20 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app",
+      "path": "1-force-dependency",
+      "default": false
+    },
+    {
+      "path": "2-force-app",
       "default": true
+    },
+    {
+      "path": "3-force-apex-test",
+      "default": false
+    },
+    {
+      "path": "4-force-manual-test",
+      "default": false
     }
   ],
   "namespace": "",
