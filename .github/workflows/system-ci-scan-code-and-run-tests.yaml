@@ -6,7 +6,8 @@ on:
     branches:
       - master
     paths:
-      - "force-app/**"
+      - "2-force-app/**"
+      - "3-force-apex-test/**"
 
 jobs:
   run-sfdx-scanner:
@@ -34,9 +35,6 @@ jobs:
         if: (env.skip_scan == '') || (env.skip_scan == 'false')
         run: |
           sfdx plugins:install @salesforce/sfdx-scanner
-          mkdir $HOME/.config/sfdx/
-          echo '["texei-sfdx-plugin"]' > $HOME/.config/sfdx/unsignedPluginAllowList.json
-          sfdx plugins:install texei-sfdx-plugin
 
       - name: "Restore node_modules cache"
         env:
@@ -74,7 +72,7 @@ jobs:
         env:
           skip_scan: ${{ secrets.skip_scan }}
         if: (env.skip_scan == '') || (env.skip_scan == 'false')
-        run: sfdx scanner:run --target "force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error
+        run: sfdx scanner:run --target "2-force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error
 
   run-apex-tests:
     runs-on: ubuntu-latest
@@ -122,17 +120,11 @@ jobs:
         if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 1'
 
-      - name: "Install SFDX-Project Dependencies"
-        env:
-          skip_apex_tests: ${{ secrets.skip_apex_tests }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
-        run: 'sfdx texei:package:dependencies:install -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
-
-      - name: "Install SFDX-NPM Dependencies"
-        env:
-          skip_apex_tests: ${{ secrets.skip_apex_tests }}
-        if: (env.skip_apex_tests == '') || (env.skip_apex_tests == 'false')
-        run: 'npm run install:dependencies'
+      - name: "Install SFDX-Project-Dependencies"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: |
+          chmod +x ./.github/scripts/installPackageDependencies.js
+          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
 
       - name: "Push source"
         env:

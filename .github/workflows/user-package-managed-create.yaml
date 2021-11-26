@@ -31,7 +31,7 @@ jobs:
 
       - name: "Create new package"
         if: env.GITHUB_REF_NAME == 'master'
-        run: 'sfdx force:package:create --name "${{ env.GITHUB_REPOSITORY_NAME }}" --path force-app --packagetype Managed'
+        run: 'sfdx force:package:create --name "${{ env.GITHUB_REPOSITORY_NAME }}" --path 2-force-app --packagetype Managed'
 
       - name: "Create PACKAGE_NAME Secret"
         if: env.GITHUB_REF_NAME == 'master'

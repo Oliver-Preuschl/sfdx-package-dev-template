@@ -20,15 +20,6 @@ jobs:
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
 
-      - name: "Install SFDX Plugins"
-        env:
-          skip_scan: ${{ secrets.skip_scan }}
-        if: (env.skip_scan == '') || (env.skip_scan == 'false')
-        run: |
-          mkdir $HOME/.config/sfdx/
-          echo '["texei-sfdx-plugin"]' > $HOME/.config/sfdx/unsignedPluginAllowList.json
-          sfdx plugins:install texei-sfdx-plugin
-
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         shell: bash
@@ -82,14 +73,11 @@ jobs:
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: 'sfdx force:org:open -u="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
-      - name: "Install SFDX-Project Dependencies"
+      - name: "Install SFDX-Project-Dependencies"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: |
-          sfdx texei:package:dependencies:install -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --loglevel=trace
-
-      - name: "Install SFDX-NPM Dependencies"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
-        run: 'npm run install:dependencies'
+          chmod +x ./.github/scripts/installPackageDependencies.js
+          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
 
       - name: "Push Source to ScratchOrg"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
