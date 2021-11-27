@@ -25,5 +25,5 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   const packageVersions = await execCommand(
     `sfdx force:package:version:list --packages=${packageName} --json`
   );
-  console.log(JSON.stringify(packageVersions));
+  console.log(JSON.stringify(packageVersions.result));
 })();

@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - "1-force-app/**"
-      - "1-force-apex-test/**"
+      - "2-force-app/**"
+      - "3-force-apex-test/**"
   workflow_dispatch:
 
 jobs:
