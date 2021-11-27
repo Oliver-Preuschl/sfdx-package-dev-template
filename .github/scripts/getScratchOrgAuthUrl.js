@@ -23,6 +23,10 @@ const fs = require("fs");
   let scratchOrgs = JSON.parse(
     fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
   );
-  const authUrl = scratchOrgs[branchName].authUrl;
+  let scratchOrgIndex = scratchOrgs.findIndex(
+    (org) => org.branchName === branchName
+  );
+  const authUrl =
+    scratchOrgIndex !== -1 ? scratchOrgs[scratchOrgIndex].sfdxAuthUrl : null;
   console.log(authUrl);
 })();

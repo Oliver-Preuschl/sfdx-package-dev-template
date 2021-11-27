@@ -63,10 +63,15 @@ jobs:
           chmod +x ./.github/scripts/getPackageVersions.js
           node ./.github/scripts/getPackageVersions.js > ./sfdx-package-versions.json
 
+      - name: "Build README"
+        run: |
+          chmod +x ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js
+
       - name: "Commit Changes"
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
-          git add sfdx-project.json sfdx-package-versions.json
+          git add sfdx-project.json sfdx-package-versions.json README.md
           git commit -m "Package Version created"
           git push

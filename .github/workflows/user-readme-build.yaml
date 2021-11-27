@@ -1,0 +1,24 @@
+name: "user:readme:build"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  CreateScratchOrg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      - name: "Build README"
+        run: |
+          chmod +x ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js
+
+      - name: "Commit Changes"
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add README.md
+          git commit -m "Auto-Updated README.md"
+          git push
