@@ -25,4 +25,20 @@ const getPackageConfig = () => {
   return packageConfig;
 };
 
+const getScratchOrgs = () => {
+  const scratchOrgs = JSON.parse(
+    fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
+  );
+  return scratchOrgs;
+};
+
+const getPackageVersions = () => {
+  const packageVersions = JSON.parse(
+    fs.readFileSync("./sfdx-package-versions.json", "utf8")
+  );
+  return packageVersions;
+};
+
 exports.getPackageConfig = getPackageConfig;
+exports.getScratchOrgs = getScratchOrgs;
+exports.getPackageVersions = getPackageVersions;

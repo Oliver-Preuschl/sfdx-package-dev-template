@@ -1,5 +1,15 @@
 ![Code Scan & Apex Test Results](../../actions/workflows/system-ci-scan-code-and-run-tests.yaml/badge.svg)
 
+## Scratch Orgs
+
+<!-- scratch-orgs:start -->
+<!-- scratch-orgs:end -->
+
+## Package Versions
+
+<!-- package-versions:start -->
+<!-- package-versions:end -->
+
 ## About
 
 This repository supports the development of sfdx second-generation packages by leveraging the power of Github workflows (automated tasks & self service tasks). It supports unlocked packages (optional org dependent) as well as managed packages.
@@ -9,9 +19,9 @@ This repository supports the development of sfdx second-generation packages by l
 All you have to do to get started is to create a new repository by using this repository as a template.
 However, since the workflows used in the repository need access to your Salesforce Dev Hub you will need to set up the following secret.
 
-|   Secret Name   | Secret Value                                                                                                                                                                                                                                                                                                                                                                                       |
-| :-------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DEVHUB_AUTH_URL | The Sfdx Auth Url. You can get this from the SFDX CLI with the following command: sfdx force:org:display --targetusername=<your dev hub username> --verbose                                                                                                                                                                                                                                        |
+|   Secret Name   | Secret Value                                                                                                                                                |
+| :-------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DEVHUB_AUTH_URL | The Sfdx Auth Url. You can get this from the SFDX CLI with the following command: sfdx force:org:display --targetusername=<your dev hub username> --verbose |
 
 ## Features
 

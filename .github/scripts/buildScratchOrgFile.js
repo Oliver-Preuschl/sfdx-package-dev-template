@@ -17,18 +17,57 @@
 "use strict";
 
 const fs = require("fs");
+const { execCommand } = require("../libs/sfdxExecutor.js");
 
 (async function () {
   const branchName = process.argv[2];
   const scratchOrgName = process.argv[3];
-  const authUrl = process.argv[4];
+
+  let scratchOrgDetails = await getScratchOrgDetails(
+    branchName,
+    scratchOrgName
+  );
+
   let scratchOrgs = JSON.parse(
     fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
   );
-  scratchOrgs[branchName] = {
-    branch: branchName,
-    scratchOrgName: scratchOrgName,
-    authUrl: authUrl
-  };
-  console.log(JSON.stringify(scratchOrgs, null, 2));
+  let scratchOrgIndexToRemove = scratchOrgs.findIndex(
+    (org) => org.branchName === branchName
+  );
+  if (scratchOrgIndexToRemove) {
+    scratchOrgs = scratchOrgs.filter(
+      (value, index) => index !== scratchOrgIndexToRemove
+    );
+  }
+  scratchOrgs.push(scratchOrgDetails);
+  console.log(JSON.stringify(scratchOrgs));
 })();
+
+async function getScratchOrgDetails(branchName, scratchOrgName) {
+  const scratchOrgDetails = await execCommand(
+    `sfdx force:org:display --targetusername="${scratchOrgName}" --verbose --json`
+  );
+  let scratchOrgData = {
+    branchName: branchName,
+    orgName: scratchOrgDetails.result.orgName,
+    userName: scratchOrgDetails.result.userName,
+    id: scratchOrgDetails.result.id,
+    accessToken: scratchOrgDetails.result.accessToken,
+    instanceUrl: scratchOrgDetails.result.instanceUrl,
+    sfdxAuthUrl: scratchOrgDetails.result.sfdxAuthUrl,
+    createdDate: scratchOrgDetails.result.createdDate,
+    expirationDate: scratchOrgDetails.result.expirationDate
+  };
+
+  const scratchOrgLogin = await execCommand(
+    `sfdx force:org:open -u="${scratchOrgName}" --json`
+  );
+  scratchOrgData.loginUrl = scratchOrgLogin.result.url;
+
+  const scratchOrgPassword = await execCommand(
+    `sfdx force:user:password:generate --targetusername "${scratchOrgName}" --json`
+  );
+  scratchOrgData.password = scratchOrgPassword.result.password;
+
+  return scratchOrgData;
+}
