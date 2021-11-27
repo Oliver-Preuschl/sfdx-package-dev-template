@@ -40,13 +40,6 @@ jobs:
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 30'
 
-      - name: "Get Scratch Org AuthURL"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
-        id: get_scratch_org_auth_url
-        run: |
-          output=$(sfdx force:org:display --targetusername="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --verbose | grep -o "force://.*")
-          echo "::set-output name=auth_url::$output"
-
       - name: "Get Branch Name"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         id: get_branch_name
@@ -60,16 +53,22 @@ jobs:
         id: save_scratch-orgs-json
         run: |
           chmod +x ./.github/scripts/buildScratchOrgFile.js
-          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ steps.get_branch_name.outputs.branch_name }}" "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" "${{ steps.get_scratch_org_auth_url.outputs.auth_url }}")
+          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ steps.get_branch_name.outputs.branch_name }}" "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}")
           echo $json > ./sfdx-scratch-orgs.json
+
+      - name: "Build README"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: |
+          chmod +x ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js
 
       - name: "Commit Changes"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
-          git add sfdx-scratch-orgs.json
-          git commit -m "Package Version created"
+          git add sfdx-scratch-orgs.json README.md
+          git commit -m "Scratch Org created"
           git push
 
       - name: "Display Scratch Org Login Link"
