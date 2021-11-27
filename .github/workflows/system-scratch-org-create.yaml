@@ -57,6 +57,7 @@ jobs:
           echo $json > ./sfdx-scratch-orgs.json
 
       - name: "Build README"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: |
           chmod +x ./.github/scripts/buildReadme.js
           node ./.github/scripts/buildReadme.js
