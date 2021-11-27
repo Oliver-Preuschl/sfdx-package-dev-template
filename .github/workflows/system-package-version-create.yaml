@@ -4,12 +4,9 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - ".**"
-      - "config/**"
-      - "README.md"
-      - "package.json"
-      - "package-lock.json"
+    paths:
+      - "1-force-app/**"
+      - "1-force-apex-test/**"
   workflow_dispatch:
 
 jobs:
