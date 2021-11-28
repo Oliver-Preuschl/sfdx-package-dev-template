@@ -26,44 +26,42 @@ const {
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
 
-  console.log("-------ScratchOrgs--------");
+  /*console.log("-------ScratchOrgs--------");
   console.log(JSON.stringify(scratchOrgs, null, 2));
   console.log("-------PackageVersions--------");
-  console.log(JSON.stringify(packageVersions, null, 2));
+  console.log(JSON.stringify(packageVersions, null, 2));*/
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
     .replace(
       /<!-- scratch-orgs:start -->[\s\S]*<!-- scratch-orgs:end -->/g,
       `<!-- scratch-orgs:start -->
-</br>
-<div style="height: 500px; overflow: scroll !important;">
-  <pre>
-    <code>
+<details>
+<summary>${scratchOrgs.length} Scratch Org(s)</summary>
+
+\`\`\`json
 ${JSON.stringify(scratchOrgs, null, 2)}
-    </code>
-  </pre>
-</div>
-</br>
+\`\`\`
+
+</details>
 <!-- scratch-orgs:end -->`
     )
     .replace(
       /<!-- package-versions:start -->[\s\S]*<!-- package-versions:end -->/g,
       `<!-- package-versions:start -->
-</br>
-<div style="height: 500px; overflow: scroll !important;">
-  <pre>
-    <code>
+<details>
+<summary>${packageVersions.length} Package Version(s)</summary>
+
+\`\`\`json
 ${JSON.stringify(packageVersions, null, 2)}
-    </code>
-  </pre>
-</div>
-</br>
+\`\`\`
+
+</details>
 <!-- package-versions:end -->`
     );
 
-  console.log("-------README--------");
-  console.log(readme);
+  /*console.log("-------README--------");
+  console.log(readme);*/
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {
