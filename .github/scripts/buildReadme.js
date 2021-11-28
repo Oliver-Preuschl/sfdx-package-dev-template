@@ -34,7 +34,7 @@ const {
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
     .replace(
-      /<!-- scratch-orgs:start -->\s*.*\s*<!-- scratch-orgs:end -->/i,
+      /<!-- scratch-orgs:start -->(.|\s|\n)*<!-- scratch-orgs:end -->/i,
       `<!-- scratch-orgs:start -->
 </br>
 <div style="height: 500px; overflow: scroll !important;">
@@ -48,7 +48,7 @@ ${JSON.stringify(scratchOrgs, null, 2)}
 <!-- scratch-orgs:end -->`
     )
     .replace(
-      /<!-- package-versions:start -->\s*.*\s*<!-- package-versions:end -->/i,
+      /<!-- package-versions:start -->(.|\s|\n)*<!-- package-versions:end -->/i,
       `<!-- package-versions:start -->
 </br>
 <div style="height: 500px; overflow: scroll !important;">
