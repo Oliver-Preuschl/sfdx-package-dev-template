@@ -1,0 +1,43 @@
+name: "system:test:lwc-tests"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+    paths:
+      - "2-force-app/**"
+      - "3-force-apex-test/**"
+
+jobs:
+  run-lwc-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      - name: "Get scanner setting"
+        id: get_lwc_test_setting
+        run: |
+          chmod +x ./.github/scripts/getPackageAttribute.js
+          runlwctests=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
+          echo "::set-output name=run_lwc_tests::$runlwctests"
+
+      - name: "Restore node_modules cache"
+        if: (steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)
+        id: cache-npm
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ env.cache-name }}-
+            npm-
+
+      - name: "Install npm dependencies"
+        if: ((steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)) && (steps.cache-npm.outputs.cache-hit != 'true')
+        run: npm ci
+
+      - name: "Run LWC tests"
+        if: (steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)
+        run: npm run test:unit:coverage --passWithNoTests

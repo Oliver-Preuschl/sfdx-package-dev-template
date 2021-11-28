@@ -1,0 +1,68 @@
+name: "system:test:code-scan"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+    paths:
+      - "2-force-app/**"
+      - "3-force-apex-test/**"
+
+jobs:
+  run-sfdx-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      - name: "Get scanner setting"
+        id: get_scanner_setting
+        run: |
+          chmod +x ./.github/scripts/getPackageAttribute.js
+          runsfdxscanner=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
+          echo $runsfdxscanner
+          echo "::set-output name=run_sfdx_scanner::$runsfdxscanner"
+
+      - name: "Install Salesforce CLI"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+
+      - name: "Install SFDX Plugins"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        run: |
+          sfdx plugins:install @salesforce/sfdx-scanner
+
+      - name: "Restore node_modules cache"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        id: cache-npm
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ env.cache-name }}-
+            npm-
+
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      - name: "Authenticate Dev Hub"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      - name: "Install npm dependencies"
+        env:
+          skip_scan: ${{ secrets.skip_scan }}
+        if: ((env.skip_scan == '') || (env.skip_scan == 'false')) && (steps.cache-npm.outputs.cache-hit != 'true')
+        run: npm ci
+
+      - name: "Run sfdx scanner"
+        if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
+        run: sfdx scanner:run --target "2-force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error

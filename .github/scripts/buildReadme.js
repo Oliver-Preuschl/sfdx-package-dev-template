@@ -26,24 +26,44 @@ const {
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
 
+  console.log("-------ScratchOrgs--------");
+  console.log(JSON.stringify(scratchOrgs, null, 2));
+  console.log("-------PackageVersions--------");
+  console.log(JSON.stringify(packageVersions, null, 2));
+
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
     .replace(
       /<!-- scratch-orgs:start -->\s*.*\s*<!-- scratch-orgs:end -->/i,
-      `<!-- scratch-orgs:start --></br><pre><code>${JSON.stringify(
-        scratchOrgs,
-        null,
-        2
-      )}</code></pre></br><!-- scratch-orgs:end -->`
+      `<!-- scratch-orgs:start -->
+</br>
+<div style="height: 500px; overflow: scroll !important;">
+  <pre>
+    <code>
+${JSON.stringify(scratchOrgs, null, 2)}
+    </code>
+  </pre>
+</div>
+</br>
+<!-- scratch-orgs:end -->`
     )
     .replace(
       /<!-- package-versions:start -->\s*.*\s*<!-- package-versions:end -->/i,
-      `<!-- package-versions:start --></br><pre><code>${JSON.stringify(
-        packageVersions,
-        null,
-        2
-      )}</code></pre></br><!-- package-versions:end -->`
+      `<!-- package-versions:start -->
+</br>
+<div style="height: 500px; overflow: scroll !important;">
+  <pre>
+    <code>
+${JSON.stringify(packageVersions, null, 2)}
+    </code>
+  </pre>
+</div>
+</br>
+<!-- package-versions:end -->`
     );
+
+  console.log("-------README--------");
+  console.log(readme);
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {

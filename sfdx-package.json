@@ -7,5 +7,8 @@
       "versionId": "04txxxxxxxxxxxxxxx",
       "password": "xxx"
     }
-  ]
+  ],
+  "runSfdxScanner": true,
+  "runApexTests": true,
+  "runLwcTests": true
 }
