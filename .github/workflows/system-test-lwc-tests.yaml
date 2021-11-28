@@ -20,7 +20,7 @@ jobs:
         id: get_lwc_test_setting
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          runlwctests=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
+          runlwctests=$(node ./.github/scripts/getPackageAttribute.js runLwcTests)
           echo "::set-output name=run_lwc_tests::$runlwctests"
 
       - name: "Restore node_modules cache"
