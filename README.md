@@ -41,11 +41,11 @@ Once the repository is created and the secrets are set up the following function
 
 Before you start with the actual package development you should configure your package details in sfdx-package.json.
 
-|   Attribute    | Description                                                                                                                                                                                       |
+|   Attribute    | Description                                                                                                                                                                                       |     |
 | :------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-|      name      | The name which will be used for the package creation.                                                                                                                                             |
-|    password    | The password which will be used for the package creation.                                                                                                                                         |
-|  dependencies  | The packages will should be automatically installed in a newly created scratch org. The sample package, which is already configured in the file, is just for reference and will not be installed. |
+|      name      | The name which will be used for the package creation.                                                                                                                                             |     |
+|    password    | The password which will be used for the package creation.                                                                                                                                         |     |
+|  dependencies  | The packages will should be automatically installed in a newly created scratch org. The sample package, which is already configured in the file, is just for reference and will not be installed. |     |
 | runSfdxScanner | Specifies if the sfdx-scanner should be executed, whenever a pull request is merged.                                                                                                              |     |
 |  runApexTests  | Specifies if all Apex tests should be executed, whenever a pull request is merged.                                                                                                                |     |
 |  runLwcTests   | Specifies if all LWC tests should be executed, whenever a pull request is merged.                                                                                                                 |     |
