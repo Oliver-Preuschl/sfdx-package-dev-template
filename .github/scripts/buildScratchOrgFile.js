@@ -50,7 +50,7 @@ async function getScratchOrgDetails(branchName, scratchOrgName) {
   let scratchOrgData = {
     branchName: branchName,
     orgName: scratchOrgDetails.result.orgName,
-    userName: scratchOrgDetails.result.userName,
+    userName: scratchOrgDetails.result.username,
     id: scratchOrgDetails.result.id,
     accessToken: scratchOrgDetails.result.accessToken,
     instanceUrl: scratchOrgDetails.result.instanceUrl,
