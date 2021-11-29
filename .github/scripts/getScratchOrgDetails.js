@@ -36,10 +36,18 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
     createdDate: scratchOrgDetails.createdDate,
     expirationDate: scratchOrgDetails.expirationDate
   };
+
   const scratchOrgLoginString = await execCommand(
     `sfdx force:org:open -u="${userName}" --json`
   );
   let scratchOrgLogin = JSON.parse(scratchOrgLoginString);
   scratchOrgData.loginUrl = scratchOrgLogin.result.url;
+
+  const scratchOrgPasswordString = await execCommand(
+    `sfdx force:user:password:generate --targetusername "${userName}" --json`
+  );
+  let scratchOrgPassword = JSON.parse(scratchOrgPasswordString);
+  scratchOrgData.password = scratchOrgPassword.result.password;
+
   console.log(JSON.stringify(scratchOrgData));
 })();
