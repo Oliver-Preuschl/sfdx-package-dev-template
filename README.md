@@ -72,7 +72,7 @@ To activate this feature you will have to add the following lines to the sfdx-pr
 }
 ```
 
-Sample of complete sfdx-projec.json file:
+Sample of complete sfdx-project.json file:
 
 ```json
 {
