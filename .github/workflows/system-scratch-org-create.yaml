@@ -87,4 +87,4 @@ jobs:
 
       - name: "Push Source to ScratchOrg"
         if: startsWith(env.GITHUB_REF_NAME, 'admin')
-        run: "sfdx force:source:push"
+        run: "sfdx force:source:push --forceoverwrite --ignorewarnings"

@@ -60,7 +60,7 @@ jobs:
 
       - name: "Pull Source from ScratchOrg"
         if: env.GITHUB_REF_NAME != 'master'
-        run: "sfdx force:source:pull"
+        run: "sfdx force:source:pull --forceoverwrite"
 
       - name: "Commit Changes"
         if: env.GITHUB_REF_NAME != 'master'
