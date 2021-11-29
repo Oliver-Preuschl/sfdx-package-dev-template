@@ -41,14 +41,14 @@ Once the repository is created and the secrets are set up the following function
 
 Before you start with the actual package development you should configure your package details in sfdx-package.json.
 
-|   Attribute    | Description                                                                                                                                                                                       |     |
-| :------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-|      name      | The name which will be used for the package creation.                                                                                                                                             |     |
-|    password    | The password which will be used for the package creation.                                                                                                                                         |     |
-|  dependencies  | The packages will should be automatically installed in a newly created scratch org. The sample package, which is already configured in the file, is just for reference and will not be installed. |     |
-| runSfdxScanner | Specifies if the sfdx-scanner should be executed, whenever a pull request is merged.                                                                                                              |     |
-|  runApexTests  | Specifies if all Apex tests should be executed, whenever a pull request is merged.                                                                                                                |     |
-|  runLwcTests   | Specifies if all LWC tests should be executed, whenever a pull request is merged.                                                                                                                 |     |
+|   Attribute    | Description                                                                                                                                                                                       |
+| :------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|      name      | The name which will be used for the package creation.                                                                                                                                             |
+|    password    | The password which will be used for the package creation.                                                                                                                                         |
+|  dependencies  | The packages will should be automatically installed in a newly created scratch org. The sample package, which is already configured in the file, is just for reference and will not be installed. |
+| runSfdxScanner | Specifies if the sfdx-scanner should be executed, whenever a pull request is merged.                                                                                                              |
+|  runApexTests  | Specifies if all Apex tests should be executed, whenever a pull request is merged.                                                                                                                |
+|  runLwcTests   | Specifies if all LWC tests should be executed, whenever a pull request is merged.                                                                                                                 |
 
 Please note, that the dependencies in the sfdx-package.json will just be used to install these packages in the automatically generated scratch orgs, not for package creation. This means, you will either have to make sure, that all necessary dependencies are available in the package directories or you create an org-dependent pakage.
 The template is structured in a way, that allows for additional ways of dependency instalation. The following table describes the sequence of actions, which are executed, whenever a new scratch-org is created.
