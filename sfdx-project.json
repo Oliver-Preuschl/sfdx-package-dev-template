@@ -1,7 +1,11 @@
 {
   "packageDirectories": [
     {
-      "path": "1-force-dependency",
+      "path": "0-force-org-dependency",
+      "default": false
+    },
+    {
+      "path": "1-force-package-dependency",
       "default": false
     },
     {
