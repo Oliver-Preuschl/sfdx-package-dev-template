@@ -58,9 +58,19 @@ jobs:
           chmod +x ./.github/scripts/installPackageDependencies.js
           node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
 
-      - name: "Push source"
+      - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: "sfdx force:source:push"
+        run: "sfdx force:source:deploy -p 0-force-org-dependency"
+
+      - name: "Install SFDX-Project-Dependencies"
+        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        run: |
+          chmod +x ./.github/scripts/installPackageDependencies.js
+          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
+
+      - name: "Push Source to ScratchOrg"
+        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        run: "sfdx force:source:push --forceoverwrite --ignorewarnings"
 
       - name: "Run Apex tests"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
