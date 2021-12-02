@@ -115,7 +115,11 @@ function getBadges(packageConfig, packageVersions) {
       badges.push(
         `![Code Coverage - Apex](https://img.shields.io/badge/Code%20Coverage%20--%20Apex-${codeCoverage}%25-${color})`
       );
+    } else {
+      console.log(`No Coverage found`);
     }
+  } else {
+    console.log(`No PackageVersion found`);
   }
   return badges;
 }

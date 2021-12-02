@@ -1,6 +1,5 @@
-![Code Scan & Apex Test Results](../../actions/workflows/system-test-code-scan.yaml/badge.svg)
-![Code Scan & Apex Test Results](../../actions/workflows/system-test-apex-tests.yaml/badge.svg)
-![Code Scan & Apex Test Results](../../actions/workflows/system-test-lwc-tests.yaml/badge.svg)
+<!-- badges:start -->
+<!-- badges:end -->
 
 ## Scratch Orgs
 
