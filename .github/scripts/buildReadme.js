@@ -125,7 +125,7 @@ function getExpandableScratchOrgsString(scratchOrgs) {
     .reverse()
     .map(
       (scratchOrg) => `
-<details>
+<details style="margin-left: 1rem; margin-bottom: 0;">
 <summary>${scratchOrg.branchName} - ${scratchOrg.createdDate}</summary>
 
 \`\`\`json
@@ -143,7 +143,7 @@ function getExpandablePackageVersionsString(packageVersions) {
     .reverse()
     .map(
       (packageVersion) => `
-<details>
+<details style="margin-left: 1rem; margin-bottom: 0;">
 <summary>${packageVersion.Version}</summary>
 
 \`\`\`json
