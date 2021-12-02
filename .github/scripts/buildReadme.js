@@ -126,7 +126,9 @@ function getExpandableScratchOrgsString(scratchOrgs) {
     .map(
       (scratchOrg) => `
 <details style="margin-left: 1rem; margin-bottom: 0;">
-<summary>${scratchOrg.branchName} - ${scratchOrg.createdDate}</summary>
+<summary>${scratchOrg.branchName} - ${getFormattedDate(
+        scratchOrg.createdDate
+      )} - <a href="${scratchOrg.loginUrl}" target="_blank">Open</a></summary>
 
 \`\`\`json
 ${JSON.stringify(scratchOrg, null, 2)}
@@ -154,4 +156,9 @@ ${JSON.stringify(packageVersion, null, 2)}
 `
     )
     .join("\n");
+}
+
+function getFormattedDate(dateString) {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
