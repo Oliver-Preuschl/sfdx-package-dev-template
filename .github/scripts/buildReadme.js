@@ -18,30 +18,44 @@
 
 const fs = require("fs");
 const {
+  getPackageConfig,
   getScratchOrgs,
   getPackageVersions
 } = require("../libs/configProvider.js");
 
 (async function () {
+  const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
 
-  /*console.log("-------ScratchOrgs--------");
+  console.log("-------ScratchOrgs--------");
   console.log(JSON.stringify(scratchOrgs, null, 2));
   console.log("-------PackageVersions--------");
-  console.log(JSON.stringify(packageVersions, null, 2));*/
+  console.log(JSON.stringify(packageVersions, null, 2));
+
+  let badges = getBadges(packageConfig, packageVersions);
+  let expandableScratchOrgsString = getExpandableScratchOrgsString(scratchOrgs);
+  let expandablePackageVersionsString =
+    getExpandablePackageVersionsString(packageVersions);
+
+  console.log("-------Badges--------");
+  console.log(JSON.stringify(badges, null, 2));
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
+    .replace(
+      /<!-- badges:start -->[\s\S]*<!-- badges:end -->/g,
+      `<!-- badges:start -->
+${badges.join("\n")}
+<!-- badges:end -->`
+    )
     .replace(
       /<!-- scratch-orgs:start -->[\s\S]*<!-- scratch-orgs:end -->/g,
       `<!-- scratch-orgs:start -->
 <details>
 <summary>${scratchOrgs.length} Scratch Org(s)</summary>
 
-\`\`\`json
-${JSON.stringify(scratchOrgs, null, 2)}
-\`\`\`
+${expandableScratchOrgsString}
 
 </details>
 <!-- scratch-orgs:end -->`
@@ -52,16 +66,14 @@ ${JSON.stringify(scratchOrgs, null, 2)}
 <details>
 <summary>${packageVersions.length} Package Version(s)</summary>
 
-\`\`\`json
-${JSON.stringify(packageVersions, null, 2)}
-\`\`\`
+${expandablePackageVersionsString}
 
 </details>
 <!-- package-versions:end -->`
     );
 
-  /*console.log("-------README--------");
-  console.log(readme);*/
+  console.log("-------README--------");
+  console.log(readme);
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {
@@ -69,3 +81,77 @@ ${JSON.stringify(packageVersions, null, 2)}
     }
   });
 })();
+
+function getBadges(packageConfig, packageVersions) {
+  let badges = [];
+  if (packageConfig.runSfdxScanner) {
+    badges.push(
+      "![Code Scan](../../actions/workflows/system-test-code-scan.yaml/badge.svg)"
+    );
+  }
+  if (packageConfig.runApexTests) {
+    badges.push(
+      "![Apex Test Results](../../actions/workflows/system-test-apex-tests.yaml/badge.svg)"
+    );
+  }
+  if (packageConfig.runLwcTests) {
+    badges.push(
+      "![LWC Test Results](../../actions/workflows/system-test-lwc-tests.yaml/badge.svg)"
+    );
+  }
+  if (packageVersions.length > 0) {
+    const codeCoverageString =
+      packageVersions[packageVersions.length - 1].CodeCoverage;
+    if (codeCoverageString) {
+      const codeCoverage = parseFloat(codeCoverageString.replace("%", ""));
+      let color;
+      if (codeCoverage < 75) {
+        color = "red";
+      } else if (codeCoverage < 85) {
+        color = "orange";
+      } else {
+        color = "green";
+      }
+      badges.push(
+        `![Code Coverage - Apex](https://img.shields.io/badge/Code%20Coverage%20--%20Apex-${codeCoverage}%25-${color})`
+      );
+    }
+  }
+  return badges;
+}
+
+function getExpandableScratchOrgsString(scratchOrgs) {
+  return scratchOrgs
+    .reverse()
+    .map(
+      (scratchOrg) => `
+<details>
+<summary>${scratchOrg.branchName} - ${scratchOrg.createdDate}</summary>
+
+\`\`\`json
+${JSON.stringify(scratchOrg, null, 2)}
+\`\`\`
+
+</details>
+`
+    )
+    .join("\n");
+}
+
+function getExpandablePackageVersionsString(packageVersions) {
+  return packageVersions
+    .reverse()
+    .map(
+      (packageVersion) => `
+<details>
+<summary>${packageVersion.Version}</summary>
+
+\`\`\`json
+${JSON.stringify(packageVersion, null, 2)}
+\`\`\`
+
+</details>
+`
+    )
+    .join("\n");
+}
