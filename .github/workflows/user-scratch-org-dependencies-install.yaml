@@ -13,22 +13,28 @@
 # limitations under the License.
 #
 
-name: "user:source:push [feature]"
+name: "system:scratch-org:dependencies:install [feature]"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pushSource:
+        type: boolean
+        description: Push Source after installation
+        required: false
 
 jobs:
-  PushSourceToScratchOrg:
+  CreateScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
 
       - name: "Checkout source code"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -36,12 +42,12 @@ jobs:
           ./sfdx-cli/install
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Get Branch Name"
@@ -70,6 +76,16 @@ jobs:
         if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
+      - name: "Deploy Org-Dependencies to ScratchOrg"
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        run: "sfdx force:source:deploy -p 0-force-org-dependency"
+
+      - name: "Install SFDX-Project-Dependencies"
+        if: ${{ startsWith(env.GITHUB_REF_NAME, 'admin') && github.event.inputs.pushSource == "true" }}
+        run: |
+          chmod +x ./.github/scripts/installPackageDependencies.js
+          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
+
       - name: "Push Source to ScratchOrg"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         run: "sfdx force:source:push --forceoverwrite --ignorewarnings"

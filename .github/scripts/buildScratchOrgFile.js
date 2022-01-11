@@ -31,13 +31,19 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   let scratchOrgs = JSON.parse(
     fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
   );
-  let scratchOrgIndexToRemove = scratchOrgs.findIndex(
-    (org) => org.branchName === branchName
-  );
-  if (scratchOrgIndexToRemove) {
-    scratchOrgs = scratchOrgs.filter(
-      (value, index) => index !== scratchOrgIndexToRemove
+  let removeScratchOrg = true;
+  while(removeScratchOrg){
+    let scratchOrgIndexToRemove = scratchOrgs.findIndex(
+      (org) => org.branchName === branchName
     );
+    console.log(scratchOrgIndexToRemove);
+    if (scratchOrgIndexToRemove !== -1) {
+      scratchOrgs = scratchOrgs.filter(
+        (value, index) => index !== scratchOrgIndexToRemove
+      );
+    }else{
+      removeScratchOrg = false;
+    }
   }
   scratchOrgs.push(scratchOrgDetails);
   console.log(JSON.stringify(scratchOrgs));

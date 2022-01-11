@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-name: "user:scratch-org:display/create [feature]"
+name: "user:scratch-org:create [feature]"
 
 on: workflow_dispatch
 
