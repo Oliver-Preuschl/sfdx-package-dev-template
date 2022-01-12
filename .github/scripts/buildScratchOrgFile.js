@@ -36,7 +36,6 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
     let scratchOrgIndexToRemove = scratchOrgs.findIndex(
       (org) => org.branchName === branchName
     );
-    console.log(scratchOrgIndexToRemove);
     if (scratchOrgIndexToRemove !== -1) {
       scratchOrgs = scratchOrgs.filter(
         (value, index) => index !== scratchOrgIndexToRemove
