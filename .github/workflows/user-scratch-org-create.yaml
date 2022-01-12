@@ -24,11 +24,11 @@ jobs:
       - uses: FranzDiebold/github-env-vars-action@v1.2.1
 
       - name: "Checkout source code"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -36,12 +36,12 @@ jobs:
           ./sfdx-cli/install
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Get ScratchOrg Name"
@@ -52,11 +52,11 @@ jobs:
           echo "::set-output name=scratch_org_name::$scratchorgname"
 
       - name: "Create scratch org"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 30'
 
       - name: "Get Branch Name"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         id: get_branch_name
         run: |
           branchname='${{ env.GITHUB_REF_NAME }}'
@@ -64,7 +64,7 @@ jobs:
           echo "::set-output name=branch_name::$branchname"
 
       - name: "Save Scratch-Orgs-JSON"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         id: save_scratch-orgs-json
         run: |
           chmod +x ./.github/scripts/buildScratchOrgFile.js
@@ -72,13 +72,13 @@ jobs:
           echo $json > ./sfdx-scratch-orgs.json
 
       - name: "Build README"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           chmod +x ./.github/scripts/buildReadme.js
           node ./.github/scripts/buildReadme.js
 
       - name: "Commit Changes"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
@@ -87,15 +87,15 @@ jobs:
           git push
 
       - name: "Display Scratch Org Login Link"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: 'sfdx force:org:open -u="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
 
       - name: "Install SFDX-Project-Dependencies"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
           node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
 
       - name: "Push Source to ScratchOrg"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: env.GITHUB_REF_NAME != 'master'
         run: "sfdx force:source:push"

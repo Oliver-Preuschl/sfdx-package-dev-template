@@ -50,6 +50,7 @@ jobs:
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Get Branch Name"
+        if: env.GITHUB_REF_NAME != 'master'
         id: get_branch_name
         run: |
           branchname='${{ env.GITHUB_REF_NAME }}'
@@ -57,6 +58,7 @@ jobs:
           echo "::set-output name=branch_name::$branchname"
 
       - name: "Get Scratch-Org-Auth-URL"
+        if: env.GITHUB_REF_NAME != 'master'
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js

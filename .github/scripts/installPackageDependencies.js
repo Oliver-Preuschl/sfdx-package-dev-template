@@ -43,10 +43,16 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
     let installationResponse;
     try {
       if (dependency.password) {
+        console.log(
+          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --installationkey ${dependency.password} --json --wait 10 --publishwait 10`
+        );
         installationResponse = await execCommand(
           `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --installationkey ${dependency.password} --json --wait 10 --publishwait 10`
         );
       } else {
+        console.log(
+          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --json --wait 10 --publishwait 10`
+        );
         installationResponse = await execCommand(
           `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --json --wait 10 --publishwait 10`
         );
@@ -55,7 +61,11 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
         `${numberOfPackages} - Package installed - "${dependency.package}"  - VersionId: "${dependency.versionId}"`
       );
     } catch (e) {
-      console.log(e);
+      console.log(
+        `${numberOfPackages} - Error during Package Installation - "${
+          dependency.package
+        }"  - "${JSON.stringify(e)}"`
+      );
     }
   }
   if (numberOfPackages === 0) {

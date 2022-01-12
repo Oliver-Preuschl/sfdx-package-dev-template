@@ -45,7 +45,7 @@ jobs:
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Get ScratchOrg Name"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: startsWith(env.GITHUB_REF_NAME, 'admin')
         id: get_scratch_org_name
         run: |
           scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_master'
