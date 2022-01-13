@@ -28,8 +28,6 @@ jobs:
   create-package-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: FranzDiebold/github-env-vars-action@v1.2.1
-
       - name: "Checkout source code"
         uses: actions/checkout@v2
 

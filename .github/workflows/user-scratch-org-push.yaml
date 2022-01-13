@@ -21,8 +21,6 @@ jobs:
   PushSourceToScratchOrg:
     runs-on: ubuntu-latest
     steps:
-      - uses: FranzDiebold/github-env-vars-action@v1.2.1
-
       - name: "Checkout source code"
         if: env.GITHUB_REF_NAME != 'master'
         uses: actions/checkout@v2
