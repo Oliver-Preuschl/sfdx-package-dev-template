@@ -25,6 +25,26 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
+      - name: "Install Salesforce CLI"
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+          ./sfdx-cli/install
+
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      - name: "Authenticate Dev Hub"
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      - name: "Save Package-Versions-JSON"
+        id: save_package_versions
+        run: |
+          chmod +x ./.github/scripts/getPackageVersions.js
+          node ./.github/scripts/getPackageVersions.js > ./sfdx-package-versions.json
+
       - name: "Build README"
         run: |
           chmod +x ./.github/scripts/buildReadme.js
