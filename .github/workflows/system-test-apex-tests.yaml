@@ -28,6 +28,11 @@ jobs:
   run-apex-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract repository name
+        id: extract_repository_name
+        shell: bash
+        run: echo "##[set-output name=repository;]$(echo ${GITHUB_REPOSITORY/\//-})"
+
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
@@ -60,7 +65,7 @@ jobs:
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
         id: get_scratch_org_name
         run: |
-          scratchorgname='${{ env.GITHUB_REPOSITORY_NAME }}_master'
+          scratchorgname='${{ steps.extract_repository_name.outputs.branch }}_master'
           echo "::set-output name=scratch_org_name::$scratchorgname"
 
       - name: "Create scratch org"
@@ -68,7 +73,7 @@ jobs:
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 1'
 
       - name: "Install SFDX-Project-Dependencies"
-        if: startsWith(env.GITHUB_REF_NAME, 'admin')
+        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
           node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"

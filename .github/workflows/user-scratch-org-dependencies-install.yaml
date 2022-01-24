@@ -27,12 +27,17 @@ jobs:
   InstallDependencies:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        id: extract_branch_name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
       - name: "Checkout source code"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
           mkdir sfdx-cli
@@ -40,24 +45,24 @@ jobs:
           ./sfdx-cli/install
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
       - name: "Get Branch Name"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         id: get_branch_name
         run: |
-          branchname='${{ env.GITHUB_REF_NAME }}'
+          branchname='${{ steps.extract_branch_name.outputs.branch }}'
           branchname="${branchname//[^0-9a-zA-Z_]/_}"
           echo "::set-output name=branch_name::$branchname"
 
       - name: "Get Scratch-Org-Auth-URL"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
@@ -65,25 +70,25 @@ jobs:
           echo "::set-output name=auth_url::$authurl"
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
           authurl=${{ steps.get_scratch_org_auth_url.outputs.auth_url }}
           echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx force:source:deploy -p 0-force-org-dependency"
 
       - name: "Install SFDX-Project-Dependencies"
-        if: ${{ env.GITHUB_REF_NAME != 'master' && github.event.inputs.pushSource == 'true' }}
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' && github.event.inputs.pushSource == 'true' }}
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
           node ./.github/scripts/installPackageDependencies.js scratchorg
 
       - name: "Push Source to ScratchOrg"
-        if: env.GITHUB_REF_NAME != 'master'
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx force:source:push --forceoverwrite --ignorewarnings"
