@@ -84,11 +84,11 @@ jobs:
         run: "sfdx force:source:deploy -p 0-force-org-dependency"
 
       - name: "Install SFDX-Project-Dependencies"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' && github.event.inputs.pushSource == 'true' }}
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
           node ./.github/scripts/installPackageDependencies.js scratchorg
 
       - name: "Push Source to ScratchOrg"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' && github.event.inputs.pushSource == 'true' }}
         run: "sfdx force:source:push --forceoverwrite --ignorewarnings"
