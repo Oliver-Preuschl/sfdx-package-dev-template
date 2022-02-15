@@ -23,6 +23,7 @@ on:
     paths:
       - "2-force-app/**"
       - "3-force-apex-test/**"
+  workflow_dispatch:
 
 jobs:
   run-apex-tests:
@@ -71,12 +72,6 @@ jobs:
       - name: "Create scratch org"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
         run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 1'
-
-      - name: "Install SFDX-Project-Dependencies"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: |
-          chmod +x ./.github/scripts/installPackageDependencies.js
-          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)

@@ -23,6 +23,7 @@ on:
     paths:
       - "2-force-app/**"
       - "3-force-apex-test/**"
+  workflow_dispatch:
 
 jobs:
   run-lwc-tests:
