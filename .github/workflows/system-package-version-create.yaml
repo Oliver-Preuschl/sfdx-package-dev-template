@@ -37,6 +37,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx update
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         shell: bash
@@ -61,11 +62,11 @@ jobs:
 
       - name: "Create new package version - with password"
         if: ${{ steps.get_package_password.outputs.package_password != '' }}
-        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
+        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ steps.get_package_password.outputs.package_password == '' }}
-        run: 'sfdx force:package:version:create --package "${{ steps.get_package_password.outputs.package_name }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 10'
+        run: 'sfdx force:package:version:create --package "${{ steps.get_package_password.outputs.package_name }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
