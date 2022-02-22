@@ -16,7 +16,6 @@
 
 "use strict";
 
-const fs = require("fs");
 const { execCommand } = require("../libs/sfdxExecutor.js");
 
 (async function () {
