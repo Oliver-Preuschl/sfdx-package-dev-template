@@ -42,6 +42,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx update
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
@@ -85,12 +86,20 @@ jobs:
           chmod +x ./.github/scripts/buildReadme.js
           node ./.github/scripts/buildReadme.js
 
+      - name: "Save SfdxScratchOrgAuthUrl"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        id: save_sfdx_auth_url
+        run: |
+          chmod +x ./.github/scripts/buildSfdxAuthUrlFile.js
+          authUrl=$(node ./.github/scripts/buildSfdxAuthUrlFile.js "${{ steps.get_branch_name.outputs.branch_name }}" "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}")
+          echo $authUrl > ./config/scratch-org-auth-url.txt
+
       - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
-          git add sfdx-scratch-orgs.json README.md
+          git add sfdx-scratch-orgs.json config/scratch-org-auth-url.txt README.md
           git commit -m "Scratch Org created"
           git push
 

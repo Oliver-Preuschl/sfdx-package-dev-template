@@ -47,6 +47,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx update
 
       - name: "Install SFDX Plugins"
         if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)

@@ -37,6 +37,7 @@ jobs:
           mkdir sfdx-cli
           tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
           ./sfdx-cli/install
+          sfdx update
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
