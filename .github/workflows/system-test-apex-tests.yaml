@@ -76,7 +76,8 @@ jobs:
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: "sfdx force:source:deploy -p 0-force-org-dependency"
+        continue-on-error: true
+        run: "sfdx force:source:deploy -p 0-force-org-dependency --ignorewarnings --ignoreerrors"
 
       - name: "Install SFDX-Project-Dependencies"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
