@@ -104,7 +104,8 @@ jobs:
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: ${{ startsWith(steps.extract_branch_name.outputs.branch, 'admin') }}
-        run: "sfdx force:source:deploy -p 0-force-org-dependency"
+        continue-on-error: true
+        run: "sfdx force:source:deploy -p 0-force-org-dependency --ignorewarnings --ignoreerrors"
 
       - name: "Install SFDX-Project-Dependencies"
         if: ${{ startsWith(steps.extract_branch_name.outputs.branch, 'admin') }}
