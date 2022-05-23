@@ -11,6 +11,11 @@
 <!-- package-versions:start -->
 <!-- package-versions:end -->
 
+## ERD
+
+<!-- objects-erd:start -->
+<!-- objects-erd:end -->
+
 ## About
 
 This repository supports the development of sfdx second-generation packages by leveraging the power of Github workflows (automated tasks & self service tasks). It supports unlocked packages (optional org dependent) as well as managed packages.
