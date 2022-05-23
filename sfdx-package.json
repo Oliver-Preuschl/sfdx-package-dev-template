@@ -11,35 +11,35 @@
       "package": "sample-package-name",
       "versionNumber": "LATEST",
       "password": "xxx",
-      "dependencyPassword": "yyy"
+      "useSamePasswordForDependencies": true
     },
     {
       "package": "sample-package-name",
       "versionNumber": "1.LATEST",
       "password": "xxx",
-      "dependencyPassword": "yyy"
+      "useSamePasswordForDependencies": true
     },
     {
       "package": "sample-package-name",
       "versionNumber": "1.1.LATEST",
       "password": "xxx",
-      "dependencyPassword": "yyy"
+      "useSamePasswordForDependencies": true
     },
     {
       "package": "sample-package-name",
       "versionNumber": "1.1.1.LATEST",
       "password": "xxx",
-      "dependencyPassword": "yyy"
+      "useSamePasswordForDependencies": true
     },
     {
       "package": "sample-package-name",
       "versionNumber": "1.1.1.1",
       "password": "xxx",
-      "dependencyPassword": "yyy"
+      "useSamePasswordForDependencies": true
     }
   ],
   "packageVersionPasswords": {
-    "sample-package-name": "zzz"
+    "sample-package-name": "xxx"
   },
   "runSfdxScanner": true,
   "runApexTests": true,

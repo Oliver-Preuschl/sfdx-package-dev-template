@@ -43,13 +43,16 @@ const { getPackageConfig } = require("../libs/configProvider.js");
       );
       const dependencyIds = await getPackageDependencies(
         subscriberPackageVersionId,
-        dependency.dependencyPassword
+        dependency.package,
+        dependency.password,
+        dependency.useSamePasswordForDependencies,
+        packageConfig
       );
       console.log(
         `------------------------------------------------------------`
       );
       console.log("dependencyIds", dependencyIds);
-      let packageId2PackageVersion = await getPackageVersionNames(
+      let packageId2PackageVersion = await getPackageNamesWithPackageVersions(
         dependencyIds
       );
       console.log(
@@ -107,13 +110,26 @@ async function getSubscriberPackageVersionId(
 
 async function getPackageDependencies(
   subscriberPackageVersionId,
-  dependencyPassword
+  packageName,
+  password,
+  useSamePasswordForDependencies,
+  packageConfig,
+  depth = 0
 ) {
   console.log(`- getPackageDependencies(${subscriberPackageVersionId})`);
   let subscriberPackageVersionIdsToReturn = [];
   let installationKeyCriteria = "";
-  if (dependencyPassword) {
-    installationKeyCriteria = ` AND (InstallationKey='${dependencyPassword}')`;
+  if (depth === 0) {
+    installationKeyCriteria = ` AND (InstallationKey='${password}')`;
+  }
+  if (depth > 0 && useSamePasswordForDependencies) {
+    installationKeyCriteria = ` AND (InstallationKey='${password}')`;
+  }
+  if (
+    packageConfig?.packageVersionPasswords &&
+    packageConfig?.packageVersionPasswords[packageName]
+  ) {
+    installationKeyCriteria = ` AND (InstallationKey='${packageConfig.packageVersionPasswords[packageName]}')`;
   }
   const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT Dependencies FROM SubscriberPackageVersion WHERE (Id='${subscriberPackageVersionId}') ${installationKeyCriteria}" --json`;
   //console.log("command", command);
@@ -122,16 +138,41 @@ async function getPackageDependencies(
     let dependencies = subscriberPackageVersion.result.records[0].Dependencies;
     console.log(" => Dependencies", dependencies || " - ");
     if (dependencies?.ids) {
-      for (let dependency of dependencies.ids) {
-        subscriberPackageVersionIdsToReturn.push(
-          dependency.subscriberPackageVersionId
+      let subscriberPackageVersionIds = dependencies.ids.map(
+        (dependency) => dependency.subscriberPackageVersionId
+      );
+      let subscriberPackageVersionId2PackageName =
+        await getPackageNamesForPackageSubscriberPackageVersionIds(
+          subscriberPackageVersionIds
         );
+      console.log(
+        " => subscriberPackageVersionId2PackageName",
+        subscriberPackageVersionId2PackageName
+      );
+      for (let dependencySubscriberPackageVersionId of subscriberPackageVersionIds) {
+        subscriberPackageVersionIdsToReturn.push(
+          dependencySubscriberPackageVersionId
+        );
+        let packageName;
+        if (
+          subscriberPackageVersionId2PackageName.has(
+            dependencySubscriberPackageVersionId
+          )
+        ) {
+          packageName = subscriberPackageVersionId2PackageName.get(
+            dependencySubscriberPackageVersionId
+          );
+        }
         subscriberPackageVersionIdsToReturn = [
-          ...subscriberPackageVersionIdsToReturn,
           ...(await getPackageDependencies(
-            dependency.subscriberPackageVersionId,
-            dependencyPassword
-          ))
+            dependencySubscriberPackageVersionId,
+            packageName,
+            password,
+            useSamePasswordForDependencies,
+            packageConfig,
+            depth + 1
+          )),
+          ...subscriberPackageVersionIdsToReturn
         ];
       }
     }
@@ -141,8 +182,28 @@ async function getPackageDependencies(
   return subscriberPackageVersionIdsToReturn;
 }
 
-async function getPackageVersionNames(subscriberPackageVersionIds) {
-  console.log(`- getPackageVersionNames(${subscriberPackageVersionIds})`);
+async function getPackageNamesForPackageSubscriberPackageVersionIds(
+  subscriberPackageVersionIds
+) {
+  console.log(
+    `- getPackageNamesForPackageSubscriberPackageVersionIds(${subscriberPackageVersionIds})`
+  );
+  const subscriberPackageVersionIdsString =
+    "('" + subscriberPackageVersionIds.join("','") + "')";
+  const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
+  const packageVersionsResponse = await execCommand(command);
+  return new Map(
+    packageVersionsResponse.result.records.map((package2Version) => [
+      package2Version.SubscriberPackageVersionId,
+      package2Version.Package2.Name
+    ])
+  );
+}
+
+async function getPackageNamesWithPackageVersions(subscriberPackageVersionIds) {
+  console.log(
+    `- getPackageNamesWithPackageVersions(${subscriberPackageVersionIds})`
+  );
   const subscriberPackageVersionIdsString =
     "('" + subscriberPackageVersionIds.join("','") + "')";
   const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
@@ -164,6 +225,11 @@ async function getPackageVersionNames(subscriberPackageVersionIds) {
       );
     }
   });
+  /*packageId2PackageVersion.forEach(());
+  const packageVersions = [];
+  subscriberPackageVersionIds.forEach((subscriberPackageVersionId) => {
+    if(packageId2PackageVersion.has())
+  });*/
   return packageId2PackageVersion;
 }
 
