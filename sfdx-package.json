@@ -6,41 +6,8 @@
       "package": "sample-package-name",
       "versionId": "04txxxxxxxxxxxxxxx",
       "password": "xxx"
-    },
-    {
-      "package": "sample-package-name",
-      "versionNumber": "LATEST",
-      "password": "xxx",
-      "dependencyPassword": "yyy"
-    },
-    {
-      "package": "sample-package-name",
-      "versionNumber": "1.LATEST",
-      "password": "xxx",
-      "dependencyPassword": "yyy"
-    },
-    {
-      "package": "sample-package-name",
-      "versionNumber": "1.1.LATEST",
-      "password": "xxx",
-      "dependencyPassword": "yyy"
-    },
-    {
-      "package": "sample-package-name",
-      "versionNumber": "1.1.1.LATEST",
-      "password": "xxx",
-      "dependencyPassword": "yyy"
-    },
-    {
-      "package": "sample-package-name",
-      "versionNumber": "1.1.1.1",
-      "password": "xxx",
-      "dependencyPassword": "yyy"
     }
   ],
-  "packageVersionPasswords": {
-    "sample-package-name": "zzz"
-  },
   "runSfdxScanner": true,
   "runApexTests": true,
   "runLwcTests": true

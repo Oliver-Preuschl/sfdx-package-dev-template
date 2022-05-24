@@ -29,27 +29,11 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
-
-  /*console.log("-------ScratchOrgs--------");
-  console.log(JSON.stringify(scratchOrgs, null, 2));
-  console.log("-------PackageVersions--------");
-  console.log(JSON.stringify(packageVersions, null, 2));*/
-
   let badges = getBadges(packageConfig, packageVersions);
   let expandableScratchOrgsString = getExpandableScratchOrgsString(scratchOrgs);
   let expandablePackageVersionsString =
     getExpandablePackageVersionsString(packageVersions);
-
-  /*console.log("-------Badges--------");
-  console.log(JSON.stringify(badges, null, 2));*/
-
   let objectMermaidMarkup = getObjectMermaidMarkup();
-  console.log("-------Mermaid (Objects)--------");
-  console.log(JSON.stringify(objectMermaidMarkup, null, 2));
-
-  /*let classMermaidMarkup = getClassMermaidMarkup();
-  console.log("-------Mermaid (Classes)--------");
-  console.log(JSON.stringify(classMermaidMarkup, null, 2));*/
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
@@ -89,17 +73,6 @@ ${objectMermaidMarkup}
 \`\`\`
 <!-- objects-erd:end -->`
     );
-  /*.replace(
-      /<!-- classes-erd:start -->[\s\S]*<!-- classes-erd:end -->/g,
-      `<!-- classes-erd:start -->
-\`\`\`mermaid
-${classMermaidMarkup}
-\`\`\`
-<!-- classes-erd:end -->`
-    )*/
-
-  /*console.log("-------README--------");
-  console.log(readme);*/
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {
@@ -230,16 +203,4 @@ Id Id PK`;
 }`;
   });
   return mermaidMarkup;
-}
-
-async function getClassMermaidMarkup() {
-  const dependencies = await execCommand(
-    `sfdx force:data:soql:query --usetoolingapi -q "SELECT MetadataComponentName, MetadataComponentType, RefMetadataComponentName, RefMetadataComponentType FROM MetadataComponentDependency WHERE RefMetadataComponentType = 'ApexClass' AND MetadataComponentType IN('ApexClass','LightningComponentBundle','ApexPage', 'AuraDefinitionBundle')"
- --json`
-  );
-  let mermaidMarkup = "erDiagram";
-  console.log(dependencies.result);
-  dependencies.result.records.forEach((record) => {
-    mermaidMarkup += `\n${record.MetadataComponentName} ||--o{ ${record.RefMetadataComponentName} : "has"`;
-  });
 }
