@@ -30,7 +30,7 @@ const { getPackageConfig } = require("../libs/configProvider.js");
     }
     if (dependency.versionNumber) {
       var packageVersionRexExp = new RegExp(
-        "(\\d|LATEST)(?:\\.(\\d|LATEST))?(?:\\.(\\d|LATEST))?(?:\\.(\\d|LATEST))?",
+        "(\\d|LATEST|LATESTRELEASED)(?:\\.(\\d|LATEST|LATESTRELEASED))?(?:\\.(\\d|LATEST|LATESTRELEASED))?(?:\\.(\\d|LATEST|LATESTRELEASED))?",
         "g"
       );
       const match = packageVersionRexExp.exec(dependency.versionNumber);
@@ -41,7 +41,7 @@ const { getPackageConfig } = require("../libs/configProvider.js");
         match[3],
         match[4]
       );
-      const dependencyIds = await getPackageDependencies(
+      const dependentSubscriberPackageVersionIds = await getPackageDependencies(
         subscriberPackageVersionId,
         dependency.package,
         dependency.password,
@@ -51,14 +51,17 @@ const { getPackageConfig } = require("../libs/configProvider.js");
       console.log(
         `------------------------------------------------------------`
       );
-      console.log("dependencyIds", dependencyIds);
-      let packageId2PackageVersion = await getPackageNamesWithPackageVersions(
-        dependencyIds
+      console.log(
+        "dependentSubscriberPackageVersionIds",
+        dependentSubscriberPackageVersionIds
+      );
+      let packageVersions = await getSortedPackageVersions(
+        dependentSubscriberPackageVersionIds
       );
       console.log(
         `------------------------------------------------------------`
       );
-      console.log("packageId2PackageVersion", packageId2PackageVersion);
+      console.log("packageVersions", packageVersions);
     }
   }
   console.log(`------------------------------------------------------------\n`);
@@ -80,16 +83,24 @@ async function getSubscriberPackageVersionId(
     }
     let versionCriterias = [];
     if (majorVersion && majorVersion !== "LATEST") {
-      versionCriterias.push(`majorVersion = ${majorVersion}`);
-    }
-    if (minorVersion && minorVersion !== "LATEST") {
-      versionCriterias.push(`minorVersion = ${minorVersion}`);
-    }
-    if (patchVersion && patchVersion !== "LATEST") {
-      versionCriterias.push(`patchVersion = ${patchVersion}`);
-    }
-    if (buildNumber && buildNumber !== "LATEST") {
-      versionCriterias.push(`buildNumber = ${buildNumber}`);
+      versionCriterias.push(`MajorVersion = ${majorVersion}`);
+      if (minorVersion && minorVersion !== "LATEST") {
+        versionCriterias.push(`MinorVersion = ${minorVersion}`);
+        if (patchVersion && patchVersion !== "LATEST") {
+          versionCriterias.push(`pPatchVersion = ${patchVersion}`);
+          if (buildNumber && buildNumber !== "LATEST") {
+            versionCriterias.push(`BuildNumber = ${buildNumber}`);
+          } else if (buildNumber !== "LATESTRELEASED") {
+            versionCriterias.push(`IsReleased = true`);
+          }
+        } else if (patchVersion !== "LATESTRELEASED") {
+          versionCriterias.push(`IsReleased = true`);
+        }
+      } else if (minorVersion !== "LATESTRELEASED") {
+        versionCriterias.push(`IsReleased = true`);
+      }
+    } else if (majorVersion !== "LATESTRELEASED") {
+      versionCriterias.push(`IsReleased = true`);
     }
     let versionCriteriaString = "";
     if (versionCriterias.length > 0) {
@@ -116,7 +127,11 @@ async function getPackageDependencies(
   packageConfig,
   depth = 0
 ) {
-  console.log(`- getPackageDependencies(${subscriberPackageVersionId})`);
+  console.log(
+    `${" ".repeat(
+      depth
+    )}- getPackageDependencies(${subscriberPackageVersionId})`
+  );
   let subscriberPackageVersionIdsToReturn = [];
   let installationKeyCriteria = "";
   if (depth === 0) {
@@ -136,7 +151,7 @@ async function getPackageDependencies(
   try {
     const subscriberPackageVersion = await execCommand(command);
     let dependencies = subscriberPackageVersion.result.records[0].Dependencies;
-    console.log(" => Dependencies", dependencies || " - ");
+    console.log(`${" ".repeat(depth)} => Dependencies`, dependencies || " - ");
     if (dependencies?.ids) {
       let subscriberPackageVersionIds = dependencies.ids.map(
         (dependency) => dependency.subscriberPackageVersionId
@@ -146,7 +161,7 @@ async function getPackageDependencies(
           subscriberPackageVersionIds
         );
       console.log(
-        " => subscriberPackageVersionId2PackageName",
+        `${" ".repeat(depth)} => subscriberPackageVersionId2PackageName`,
         subscriberPackageVersionId2PackageName
       );
       for (let dependencySubscriberPackageVersionId of subscriberPackageVersionIds) {
@@ -177,7 +192,7 @@ async function getPackageDependencies(
       }
     }
   } catch (e) {
-    console.log(` - Error: ${e.message}`);
+    console.log(`${" ".repeat(depth)} - Error: ${e.message}`);
   }
   return subscriberPackageVersionIdsToReturn;
 }
@@ -200,10 +215,8 @@ async function getPackageNamesForPackageSubscriberPackageVersionIds(
   );
 }
 
-async function getPackageNamesWithPackageVersions(subscriberPackageVersionIds) {
-  console.log(
-    `- getPackageNamesWithPackageVersions(${subscriberPackageVersionIds})`
-  );
+async function getSortedPackageVersions(subscriberPackageVersionIds) {
+  console.log(`- getSortedPackageVersions(${subscriberPackageVersionIds})`);
   const subscriberPackageVersionIdsString =
     "('" + subscriberPackageVersionIds.join("','") + "')";
   const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
@@ -225,12 +238,31 @@ async function getPackageNamesWithPackageVersions(subscriberPackageVersionIds) {
       );
     }
   });
-  /*packageId2PackageVersion.forEach(());
-  const packageVersions = [];
-  subscriberPackageVersionIds.forEach((subscriberPackageVersionId) => {
-    if(packageId2PackageVersion.has())
-  });*/
-  return packageId2PackageVersion;
+  let packageVersions = Array.from(packageId2PackageVersion.values());
+  packageVersions.sort((packageVersion1, packageVersion2) => {
+    if (
+      subscriberPackageVersionIds.indexOf(
+        packageVersion1.SubscriberPackageVersionId
+      ) <
+      subscriberPackageVersionIds.indexOf(
+        packageVersion2.SubscriberPackageVersionId
+      )
+    ) {
+      return -1;
+    } else if (
+      subscriberPackageVersionIds.indexOf(
+        packageVersion1.SubscriberPackageVersionId
+      ) >
+      subscriberPackageVersionIds.indexOf(
+        packageVersion2.SubscriberPackageVersionId
+      )
+    ) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  return packageVersions;
 }
 
 function isVersionGreater(package2Version1, package2Version2) {

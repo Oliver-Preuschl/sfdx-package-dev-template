@@ -15,7 +15,7 @@
     },
     {
       "package": "sample-package-name",
-      "versionNumber": "1.LATEST",
+      "versionNumber": "1.LATESTRELEASED",
       "password": "xxx",
       "useSamePasswordForDependencies": true
     },
@@ -27,7 +27,7 @@
     },
     {
       "package": "sample-package-name",
-      "versionNumber": "1.1.1.LATEST",
+      "versionNumber": "1.1.1.LATESTRELEASED",
       "password": "xxx",
       "useSamePasswordForDependencies": true
     },
@@ -35,6 +35,12 @@
       "package": "sample-package-name",
       "versionNumber": "1.1.1.1",
       "password": "xxx",
+      "useSamePasswordForDependencies": true
+    },
+    {
+      "package": "apex-record-mass-processor",
+      "versionNumber": "LATEST",
+      "password": "Amo3kApMAQzzQx8wnqnjUd",
       "useSamePasswordForDependencies": true
     }
   ],
