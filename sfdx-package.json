@@ -42,6 +42,12 @@
       "versionNumber": "LATEST",
       "password": "Amo3kApMAQzzQx8wnqnjUd",
       "useSamePasswordForDependencies": true
+    },
+    {
+      "package": "lwc-ui-controls-nn",
+      "versionNumber": "LATEST",
+      "password": "Amo3kApMAQzzQx8wnqnjUd",
+      "useSamePasswordForDependencies": true
     }
   ],
   "packageVersionPasswords": {

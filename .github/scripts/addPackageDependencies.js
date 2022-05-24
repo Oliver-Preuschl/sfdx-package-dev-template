@@ -21,9 +21,12 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
 const { getPackageConfig } = require("../libs/configProvider.js");
 
 (async function () {
-  console.log(`\n------------------------------------------------------------`);
   const packageConfig = getPackageConfig();
+  let subscriberPackageVersionIdsWithNames = [];
   for (let dependency of packageConfig.dependencies) {
+    console.log(
+      `\n------------------------------------------------------------\n------------------------------------------------------------`
+    );
     //console.log(dependency);
     if (dependency.package === "sample-package-name") {
       continue;
@@ -41,30 +44,38 @@ const { getPackageConfig } = require("../libs/configProvider.js");
         match[3],
         match[4]
       );
-      const dependentSubscriberPackageVersionIds = await getPackageDependencies(
-        subscriberPackageVersionId,
-        dependency.package,
-        dependency.password,
-        dependency.useSamePasswordForDependencies,
-        packageConfig
-      );
+      const dependentSubscriberPackageVersionIdsWithNames =
+        await getPackageDependencies(
+          subscriberPackageVersionId,
+          dependency.package,
+          dependency.password,
+          dependency.useSamePasswordForDependencies,
+          packageConfig
+        );
       console.log(
         `------------------------------------------------------------`
       );
       console.log(
-        "dependentSubscriberPackageVersionIds",
-        dependentSubscriberPackageVersionIds
+        "dependentSubscriberPackageVersionIdsWithNames",
+        dependentSubscriberPackageVersionIdsWithNames
       );
-      let packageVersions = await getSortedPackageVersions(
-        dependentSubscriberPackageVersionIds
-      );
-      console.log(
-        `------------------------------------------------------------`
-      );
-      console.log("packageVersions", packageVersions);
+      subscriberPackageVersionIdsWithNames = [
+        ...subscriberPackageVersionIdsWithNames,
+        ...dependentSubscriberPackageVersionIdsWithNames
+      ];
     }
+    console.log(
+      `------------------------------------------------------------\n------------------------------------------------------------\n`
+    );
   }
-  console.log(`------------------------------------------------------------\n`);
+  let packageVersions = await getSortedPackageVersions(
+    subscriberPackageVersionIdsWithNames
+  );
+  console.log(`------------------------------------------------------------`);
+  console.log("packageVersions", packageVersions);
+  console.log(
+    `------------------------------------------------------------\n------------------------------------------------------------\n`
+  );
 })();
 
 async function getSubscriberPackageVersionId(
@@ -132,7 +143,7 @@ async function getPackageDependencies(
       depth
     )}- getPackageDependencies(${subscriberPackageVersionId})`
   );
-  let subscriberPackageVersionIdsToReturn = [];
+  let subscriberPackageVersionIdsWithNamesToReturn = [];
   let installationKeyCriteria = "";
   if (depth === 0) {
     installationKeyCriteria = ` AND (InstallationKey='${password}')`;
@@ -164,37 +175,42 @@ async function getPackageDependencies(
         `${" ".repeat(depth)} => subscriberPackageVersionId2PackageName`,
         subscriberPackageVersionId2PackageName
       );
-      for (let dependencySubscriberPackageVersionId of subscriberPackageVersionIds) {
-        subscriberPackageVersionIdsToReturn.push(
-          dependencySubscriberPackageVersionId
-        );
-        let packageName;
-        if (
-          subscriberPackageVersionId2PackageName.has(
-            dependencySubscriberPackageVersionId
+      const subscriberpackageVersionIdsWithName =
+        subscriberPackageVersionIds.map((subscriberPackageVersionId) => ({
+          subscriberPackageVersionId: subscriberPackageVersionId,
+          packageName: subscriberPackageVersionId2PackageName.get(
+            subscriberPackageVersionId
           )
-        ) {
-          packageName = subscriberPackageVersionId2PackageName.get(
-            dependencySubscriberPackageVersionId
-          );
-        }
-        subscriberPackageVersionIdsToReturn = [
-          ...(await getPackageDependencies(
-            dependencySubscriberPackageVersionId,
+        }));
+      for (let dependencySubscriberPackageVersionIdWithName of subscriberpackageVersionIdsWithName) {
+        subscriberPackageVersionIdsWithNamesToReturn.push(
+          dependencySubscriberPackageVersionIdWithName
+        );
+        let packageName =
+          dependencySubscriberPackageVersionIdWithName.packageName;
+        const subscriberPackageVersionIdsWithNamesToAdd =
+          await getPackageDependencies(
+            dependencySubscriberPackageVersionIdWithName.subscriberPackageVersionId,
             packageName,
             password,
             useSamePasswordForDependencies,
             packageConfig,
             depth + 1
-          )),
-          ...subscriberPackageVersionIdsToReturn
+          );
+        subscriberPackageVersionIdsWithNamesToReturn = [
+          ...subscriberPackageVersionIdsWithNamesToAdd,
+          ...subscriberPackageVersionIdsWithNamesToReturn
         ];
       }
     }
+    subscriberPackageVersionIdsWithNamesToReturn = [
+      ...subscriberPackageVersionIdsWithNamesToReturn,
+      { subscriberPackageVersionId, packageName }
+    ];
   } catch (e) {
     console.log(`${" ".repeat(depth)} - Error: ${e.message}`);
   }
-  return subscriberPackageVersionIdsToReturn;
+  return subscriberPackageVersionIdsWithNamesToReturn;
 }
 
 async function getPackageNamesForPackageSubscriberPackageVersionIds(
@@ -215,10 +231,19 @@ async function getPackageNamesForPackageSubscriberPackageVersionIds(
   );
 }
 
-async function getSortedPackageVersions(subscriberPackageVersionIds) {
-  console.log(`- getSortedPackageVersions(${subscriberPackageVersionIds})`);
+async function getSortedPackageVersions(subscriberPackageVersionIdsWithNames) {
+  console.log(
+    `- getSortedPackageVersions(${subscriberPackageVersionIdsWithNames})`
+  );
   const subscriberPackageVersionIdsString =
-    "('" + subscriberPackageVersionIds.join("','") + "')";
+    "('" +
+    subscriberPackageVersionIdsWithNames
+      .map(
+        (subscriberPackageVersionIdWithName) =>
+          subscriberPackageVersionIdWithName.subscriberPackageVersionId
+      )
+      .join("','") +
+    "')";
   const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
   //console.log("command", command);
   const packageVersionsResponse = await execCommand(command);
@@ -238,24 +263,34 @@ async function getSortedPackageVersions(subscriberPackageVersionIds) {
       );
     }
   });
+  const sortedPackageNames = subscriberPackageVersionIdsWithNames.reduce(
+    (sortedPackageNames, subscriberPackageVersionIdWithName) => {
+      if (
+        !sortedPackageNames.includes(
+          subscriberPackageVersionIdWithName.packageName
+        )
+      ) {
+        return [
+          ...sortedPackageNames,
+          subscriberPackageVersionIdWithName.packageName
+        ];
+      } else {
+        return sortedPackageNames;
+      }
+    },
+    []
+  );
+  console.log(`-  sortedPackageNames`, sortedPackageNames);
   let packageVersions = Array.from(packageId2PackageVersion.values());
   packageVersions.sort((packageVersion1, packageVersion2) => {
     if (
-      subscriberPackageVersionIds.indexOf(
-        packageVersion1.SubscriberPackageVersionId
-      ) <
-      subscriberPackageVersionIds.indexOf(
-        packageVersion2.SubscriberPackageVersionId
-      )
+      sortedPackageNames.indexOf(packageVersion1.Package2.Name) <
+      sortedPackageNames.indexOf(packageVersion2.Package2.Name)
     ) {
       return -1;
     } else if (
-      subscriberPackageVersionIds.indexOf(
-        packageVersion1.SubscriberPackageVersionId
-      ) >
-      subscriberPackageVersionIds.indexOf(
-        packageVersion2.SubscriberPackageVersionId
-      )
+      sortedPackageNames.indexOf(packageVersion1.Package2.Name) >
+      sortedPackageNames.indexOf(packageVersion2.Package2.Name)
     ) {
       return 1;
     } else {
