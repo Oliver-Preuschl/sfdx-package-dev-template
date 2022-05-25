@@ -33,8 +33,7 @@ jobs:
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
           tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
-          echo $PATH
-          export PATH=./sfdx-cli/bin:$PATH
+          ln -s ./sfdx-cli/bin/sfdx /usr/local/bin/sfdx
           sfdx update
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
