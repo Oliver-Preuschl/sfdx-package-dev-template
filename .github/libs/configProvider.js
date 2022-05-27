@@ -18,27 +18,23 @@
 
 const fs = require("fs");
 
+const getProjectConfig = () => {
+  return JSON.parse(fs.readFileSync("./sfdx-project.json", "utf8"));
+};
+
 const getPackageConfig = () => {
-  const packageConfig = JSON.parse(
-    fs.readFileSync("./sfdx-package.json", "utf8")
-  );
-  return packageConfig;
+  return JSON.parse(fs.readFileSync("./sfdx-package.json", "utf8"));
 };
 
 const getScratchOrgs = () => {
-  const scratchOrgs = JSON.parse(
-    fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
-  );
-  return scratchOrgs;
+  return JSON.parse(fs.readFileSync("./sfdx-scratch-orgs.json", "utf8"));
 };
 
 const getPackageVersions = () => {
-  const packageVersions = JSON.parse(
-    fs.readFileSync("./sfdx-package-versions.json", "utf8")
-  );
-  return packageVersions;
+  return JSON.parse(fs.readFileSync("./sfdx-package-versions.json", "utf8"));
 };
 
+exports.getProjectConfig = getProjectConfig;
 exports.getPackageConfig = getPackageConfig;
 exports.getScratchOrgs = getScratchOrgs;
 exports.getPackageVersions = getPackageVersions;
