@@ -168,6 +168,9 @@ function getFormattedDate(dateString) {
 
 function getObjectMermaidMarkup() {
   let mermaidMarkup = "erDiagram";
+  if (!fs.readdirSync("./2-force-app/main/default/objects")) {
+    return "";
+  }
   fs.readdirSync("./2-force-app/main/default/objects").forEach((objectName) => {
     console.log(objectName);
     let sObjectDefinition = `\n${objectName}{
