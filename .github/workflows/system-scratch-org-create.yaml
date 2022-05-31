@@ -30,6 +30,10 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         uses: actions/checkout@v2
 
+      - name: "Install npm dependencies"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: npm ci
+
       - name: "Install Salesforce CLI"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
