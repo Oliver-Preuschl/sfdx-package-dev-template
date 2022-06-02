@@ -77,6 +77,13 @@ jobs:
           sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
 
+      - name: "Get Release Name from Project Config"
+        if: ${{ github.event.inputs.versionName == '' }}
+        run: |
+          releaseName='$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)'
+        env:
+          RELEASE_NAME: $releaseName
+
       - name: "TEST"
         run: |
           echo ${{ env.RELEASE_NAME }}
