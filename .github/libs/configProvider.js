@@ -39,6 +39,17 @@ const getPackageVersions = () => {
   return packageVersions;
 };
 
+const getProjectDefaultPackageDirectoryConfig = () => {
+  const projectDefaultPackageDirectoryConfig = JSON.parse(
+    fs.readFileSync("./sfdx-project.json", "utf8")
+  ).packageDirectories.find((packageDirectory) => {
+    return packageDirectory.default;
+  });
+  return projectDefaultPackageDirectoryConfig;
+};
+
 exports.getPackageConfig = getPackageConfig;
 exports.getScratchOrgs = getScratchOrgs;
 exports.getPackageVersions = getPackageVersions;
+exports.getProjectDefaultPackageDirectoryConfig =
+  getProjectDefaultPackageDirectoryConfig;
