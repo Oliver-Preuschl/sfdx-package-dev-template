@@ -15,7 +15,9 @@
 
 name: "system:scratch-org:create [create:feature]"
 
-on: create
+on:
+  - create
+  - workflow_dispatch
 
 jobs:
   CreateScratchOrg:
