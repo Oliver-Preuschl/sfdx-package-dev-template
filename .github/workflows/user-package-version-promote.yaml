@@ -36,11 +36,11 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
 
       - name: "Checkout code"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        #if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install npm dependencies"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        #if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         run: npm ci
 
       - name: "Install Salesforce CLI"
