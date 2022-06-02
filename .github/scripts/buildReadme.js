@@ -189,11 +189,22 @@ Id Id PK`;
         { encoding: "utf8", flag: "r" }
       );
       parseString(xml, function (err, json) {
-        if (json.CustomField.referenceTo?.[0]) {
-          console.log(`${objectName} -> ${json.CustomField.referenceTo}`);
+        if (
+          json.CustomField.type?.[0] === "MasterDetail" ||
+          json.CustomField.type?.[0] === "Lookup"
+        ) {
+          const referenceTo =
+            json.CustomField.referenceTo?.[0] ||
+            json.CustomField.fullName?.[0].replace(/(Id)$/, "");
+          if (referenceTo === "Product" || referenceTo === "Pricebook") {
+            referenceTo += "2";
+          }
+          console.log(`${objectName} -> ${referenceTo}`);
           const relationshipString =
             json.CustomField.type?.[0] === "Lookup" ? "|o" : "||";
-          mermaidMarkup += `\n${json.CustomField.referenceTo?.[0]} ${relationshipString}--o{ ${objectName} : "${json.CustomField.relationshipName?.[0]}"`;
+          const relationshipName =
+            json.CustomField.relationshipName?.[0] || "-";
+          mermaidMarkup += `\n${referenceTo} ${relationshipString}--o{ ${objectName} : "${relationshipName}"`;
           sObjectDefinition += `\n${json.CustomField.type?.[0]} ${json.CustomField.fullName?.[0]} FK`;
         }
         if (
