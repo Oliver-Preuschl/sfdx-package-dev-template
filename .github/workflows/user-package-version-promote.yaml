@@ -80,9 +80,7 @@ jobs:
       - name: "Get Release Name from Project Config"
         if: ${{ github.event.inputs.versionName == '' }}
         run: |
-          releaseName='$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)'
-        env:
-          RELEASE_NAME: $releaseName
+          echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" >> $GITHUB_ENV
 
       - name: "TEST"
         run: |
