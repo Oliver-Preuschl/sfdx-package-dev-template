@@ -6,8 +6,7 @@
     },
     {
       "path": "2-force-app",
-      "default": true,
-      "versionName": "blubb"
+      "default": true
     },
     {
       "path": "3-force-apex-test",
