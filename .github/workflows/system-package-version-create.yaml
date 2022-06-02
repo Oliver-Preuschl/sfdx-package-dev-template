@@ -31,6 +31,9 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
+      - name: "Install npm dependencies"
+        run: npm ci
+
       - name: "Install Salesforce CLI"
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
