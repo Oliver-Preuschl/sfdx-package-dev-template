@@ -20,7 +20,10 @@ on:
     inputs:
       versionName:
         description: "Version Name"
-        required: true
+        required: false
+
+env:
+  RELEASE_NAME: ${{ github.event.inputs.versionName }}
 
 jobs:
   build:
@@ -73,6 +76,22 @@ jobs:
           latestVersion=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
           sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
+
+      - name: "TEST"
+        run: |
+          echo ${{ env.RELEASE_NAME }}
+
+      #- name: "Get Release Version Name from Project Config"
+      #  if: ${{ github.event.inputs.versionName == '' }}
+      #  run: |
+      #    releaseName='$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)'
+      #    echo "::set-output name=release_name::$releaseName"
+
+      #- name: "Get Release Version Name from Input Parameter"
+      #  if: ${{ github.event.inputs.versionName != '' }}
+      #  run: |
+      #    releaseName=${{ github.event.inputs.versionName }}
+      #    echo "::set-output name=release_name::$releaseName"
 
       - name: "Create Release"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
