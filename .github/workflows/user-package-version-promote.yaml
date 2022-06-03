@@ -20,7 +20,10 @@ on:
     inputs:
       versionName:
         description: "Version Name"
-        required: true
+        required: false
+
+env:
+  RELEASE_NAME: ${{ github.event.inputs.versionName }}
 
 jobs:
   build:
@@ -73,6 +76,11 @@ jobs:
           sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
 
+      - name: "Get Release Name from Project Config"
+        if: ${{ github.event.inputs.versionName == '' }}
+        run: |
+          echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" >> $GITHUB_ENV
+
       - name: "Create Release"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         id: create_release
@@ -80,8 +88,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "${{ github.event.inputs.versionName }}"
-          release_name: "Release ${{ github.event.inputs.versionName }}"
+          tag_name: "${{ env.RELEASE_NAME }}"
+          release_name: "Release ${{ env.RELEASE_NAME }}"
           body: |
             /packaging/installPackage.apexp?p0=${{ steps.promote_package_version.outputs.latest_package_version_id }}
           draft: false
