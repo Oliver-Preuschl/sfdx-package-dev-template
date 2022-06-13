@@ -104,9 +104,6 @@ const {
 })();
 
 async function getSortedPackageVersions(subscriberPackageVersionIdsWithNames) {
-  /*console.log(
-    `| getSortedPackageVersions(${subscriberPackageVersionIdsWithNames})`
-  );*/
   const subscriberPackageVersionIdsString =
     "('" +
     subscriberPackageVersionIdsWithNames
@@ -117,7 +114,6 @@ async function getSortedPackageVersions(subscriberPackageVersionIdsWithNames) {
       .join("','") +
     "')";
   const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
-  //console.log("command", command);
   const packageVersionsResponse = await execCommand(command);
   let subscriberPakageVersionId2Name = new Map(
     subscriberPackageVersionIdsWithNames.map(
@@ -165,7 +161,6 @@ async function getSortedPackageVersions(subscriberPackageVersionIdsWithNames) {
     },
     []
   );
-  //console.log(`| > sortedPackageNames`, sortedPackageNames);
   let packageVersions = Array.from(packageId2PackageVersion.values());
   packageVersions.sort((packageVersion1, packageVersion2) => {
     if (

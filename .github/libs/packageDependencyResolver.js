@@ -76,9 +76,6 @@ class DependencyResolver {
     buildNumber = null
   } = {}) {
     try {
-      /*console.log(
-        `| getSubscriberPackageVersionId(${packageName}, ${majorVersion}, ${minorVersion}, ${patchVersion}, ${buildNumber})`
-      );*/
       if (!majorVersion) {
         return {};
       }
@@ -90,10 +87,8 @@ class DependencyResolver {
       );
       const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE Package2.Name = '${packageName}' ${versionCriteriaString} ORDER BY MajorVersion DESC, MinorVersion DESC, PatchVersion DESC, BuildNumber DESC LIMIT 1" --json`;
       const packageVersion = await execCommand(command);
-      //console.log("packageVersions", JSON.stringify(packageVersion));
       let subscriberPackageVersionId =
         packageVersion?.result?.records?.[0]?.SubscriberPackageVersionId;
-      //console.log("| >", subscriberPackageVersionId);
       return subscriberPackageVersionId;
     } catch (e) {
       console.log(` > Error: ${e.message}`);
@@ -134,11 +129,6 @@ class DependencyResolver {
     packageName,
     depth = 0
   ) {
-    /*console.log(
-      `|${"--".repeat(
-        depth
-      )} getPackageDependencies(${subscriberPackageVersionId})`
-    );*/
     console.log(`|${"--".repeat(depth)} ${packageName}`);
     let subscriberPackageVersionIdsWithNamesToReturn = [];
     const installationKey = this.getInstallationKey(packageName, depth);
@@ -146,7 +136,6 @@ class DependencyResolver {
       ? ` AND (InstallationKey='${installationKey}')`
       : "";
     const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT Dependencies FROM SubscriberPackageVersion WHERE (Id='${subscriberPackageVersionId}') ${installationKeyCriteria}" --json`;
-    //console.log("command", command);
     try {
       const directDependencySubscriberPackageVersions = await execCommand(
         command
@@ -154,7 +143,6 @@ class DependencyResolver {
       const dependencies =
         directDependencySubscriberPackageVersions.result.records?.[0]
           ?.Dependencies;
-      //console.log(`|${"--".repeat(depth)} >`, dependencies || " - ");
       if (dependencies?.ids) {
         const directDependencySubscriberpackageVersionIdsWithName =
           await this.getDirectDependencySubscriberPackageVersionIdsWithNames(
@@ -190,11 +178,6 @@ class DependencyResolver {
     dependencies,
     depth = 0
   ) {
-    /*console.log(
-      `|${"--".repeat(
-        depth
-      )} getDirectDependencySubscriberPackageVersionIdsWithNames(${dependencies}, ${depth})`
-    );*/
     let directDependencySubscriberPackageVersionIds = dependencies.ids.map(
       (dependency) => dependency.subscriberPackageVersionId
     );
@@ -212,10 +195,6 @@ class DependencyResolver {
             )
         })
       );
-    /*console.log(
-      `|${"--".repeat(depth)} >`,
-      directDependencySubscriberPackageVersionIdsWithNames
-    );*/
     return directDependencySubscriberPackageVersionIdsWithNames;
   }
 
