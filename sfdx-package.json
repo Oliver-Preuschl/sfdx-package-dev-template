@@ -1,22 +1,59 @@
 {
-    "name": "",
-    "password": "",
-    "dependencies": [
-        {
-            "package": "apex-record-mass-processor",
-            "versionNumber": "LATEST",
-            "password": "Amo3kApMAQzzQx8wnqnjUd",
-            "useSamePasswordForDependencies": true
-        },
-        {
-            "package": "lwc-ui-controls-nn",
-            "versionNumber": "LATEST",
-            "password": "Amo3kApMAQzzQx8wnqnjUd",
-            "useSamePasswordForDependencies": true
-        }
-    ],
-    "packageVersionPasswords": {},
-    "runSfdxScanner": true,
-    "runApexTests": true,
-    "runLwcTests": true
+  "name": "",
+  "password": "",
+  "dependencies": [
+    {
+      "package": "apex-record-mass-processor",
+      "versionNumber": "LATEST",
+      "password": "Amo3kApMAQzzQx8wnqnjUd",
+      "useSamePasswordForDependencies": true
+    },
+    {
+      "package": "not-available-name",
+      "versionNumber": "LATEST",
+      "password": "Amo3kApMAQzzQx8wnqnjUd",
+      "useSamePasswordForDependencies": true
+    },
+    {
+      "package": "not-available-id",
+      "packageVersion": "123456789",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package": "lwc-ui-controls-nn",
+      "versionNumber": "LATEST",
+      "password": "Amo3kApMAQzzQx8wnqnjUd",
+      "useSamePasswordForDependencies": true
+    }
+  ],
+  "packageVersionPasswords": {},
+  "runSfdxScanner": true,
+  "runApexTests": true,
+  "runLwcTests": true,
+  "calculatedDependencies": [
+    {
+      "package-name": "apex-core",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package-name": "apex-logger",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package-name": "apex-test-data",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package-name": "apex-record-mass-processor",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package-name": "lwc-core-nn",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "package-name": "lwc-ui-controls-nn",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    }
+  ]
 }

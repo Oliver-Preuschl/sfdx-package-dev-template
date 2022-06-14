@@ -26,7 +26,7 @@ class DependencyResolver {
     console.log(
       "\n|------------------------------------------------------------"
     );
-    console.log(`| Get Dependencies for ${this.dependency.package}`);
+    console.log(`| Resolve Dependencies for ${this.dependency.package}`);
     const versionNumbers = this.getPackageVersionNumbersFromVersionString(
       this.dependency.versionNumber
     );
@@ -44,10 +44,10 @@ class DependencyResolver {
         subscriberPackageVersionId,
         this.dependency.package
       );
-    console.log(
+    /*console.log(
       "| dependencySubscriberPackageVersionIdsWithNames",
       dependencySubscriberPackageVersionIdsWithNames
-    );
+    );*/
     console.log(
       "|------------------------------------------------------------"
     );
@@ -130,6 +130,13 @@ class DependencyResolver {
     depth = 0
   ) {
     console.log(`|${"--".repeat(depth)} ${packageName}`);
+    if (
+      subscriberPackageVersionId === null ||
+      subscriberPackageVersionId === undefined
+    ) {
+      console.log(`|${"--".repeat(depth)} Package not found in DevHub`);
+      return [];
+    }
     let subscriberPackageVersionIdsWithNamesToReturn = [];
     const installationKey = this.getInstallationKey(packageName, depth);
     const installationKeyCriteria = installationKey

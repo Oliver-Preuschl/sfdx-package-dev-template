@@ -45,6 +45,7 @@ const {
         ...dependencySubscriberPackageVersionIdsWithNames
       ];
     } else {
+      console.log("Adding ", dependency.package, dependency.packageVersion);
       subscriberPackageVersionIdsWithNames = [
         ...subscriberPackageVersionIdsWithNames,
         {
@@ -61,7 +62,7 @@ const {
   console.log(
     "\n|------------------------------------------------------------"
   );
-  console.log("| packageVersions", packageVersions);
+  console.log("| Package Versions + Dependencies", packageVersions);
   console.log("|------------------------------------------------------------");
 
   packageConfig.calculatedDependencies = packageVersions.map(
