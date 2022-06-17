@@ -112,6 +112,12 @@ jobs:
         continue-on-error: true
         run: "sfdx force:source:deploy -p 0-force-org-dependency --ignorewarnings --ignoreerrors"
 
+      - name: "Calculate SFDX-Project-Dependencies"
+        if: ${{ startsWith(steps.extract_branch_name.outputs.branch, 'admin') }}
+        run: |
+          chmod +x ./.github/scripts/installPackageDependencies.js
+          node ./.github/scripts/calculatePackageDependencies.js"
+
       - name: "Install SFDX-Project-Dependencies"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
