@@ -25,6 +25,9 @@
         },
         {
           "package": "lwc-ui-controls-nn"
+        },
+        {
+          "package": "not-available-id"
         }
       ]
     },
@@ -46,6 +49,7 @@
     "apex-test-data": "04t4T000001dQqDQAU",
     "apex-record-mass-processor": "04t4T000001puTOQAY",
     "lwc-core-nn": "04t4T000001dQpyQAE",
-    "lwc-ui-controls-nn": "04t4T000001dQzpQAE"
+    "lwc-ui-controls-nn": "04t4T000001dQzpQAE",
+    "not-available-id": "04t000000000000000"
   }
 }

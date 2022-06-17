@@ -3,24 +3,24 @@
   "password": "",
   "dependencies": [
     {
-      "package": "apex-record-mass-processor",
+      "packageName": "apex-record-mass-processor",
       "versionNumber": "LATEST",
       "password": "Amo3kApMAQzzQx8wnqnjUd",
       "useSamePasswordForDependencies": true
     },
     {
-      "package": "not-available-name",
+      "packageName": "not-available-name",
       "versionNumber": "LATEST",
       "password": "Amo3kApMAQzzQx8wnqnjUd",
       "useSamePasswordForDependencies": true
     },
     {
-      "package": "not-available-id",
-      "packageVersion": "123456789",
+      "packageName": "not-available-id",
+      "versionId": "04t000000000000000",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package": "lwc-ui-controls-nn",
+      "packageName": "lwc-ui-controls-nn",
       "versionNumber": "LATEST",
       "password": "Amo3kApMAQzzQx8wnqnjUd",
       "useSamePasswordForDependencies": true
@@ -32,27 +32,44 @@
   "runLwcTests": true,
   "calculatedDependencies": [
     {
-      "package-name": "apex-core",
+      "packageName": "apex-core",
+      "versionNumber": "0.1.4.1",
+      "versionId": "04t4T000001puQUQAY",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package-name": "apex-logger",
+      "packageName": "apex-logger",
+      "versionNumber": "0.1.1.10",
+      "versionId": "04t4T000001puKWQAY",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package-name": "apex-test-data",
+      "packageName": "apex-test-data",
+      "versionNumber": "0.1.3.2",
+      "versionId": "04t4T000001dQqDQAU",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package-name": "apex-record-mass-processor",
+      "packageName": "apex-record-mass-processor",
+      "versionNumber": "0.1.6.3",
+      "versionId": "04t4T000001puTOQAY",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package-name": "lwc-core-nn",
+      "packageName": "lwc-core-nn",
+      "versionNumber": "0.1.1.1",
+      "versionId": "04t4T000001dQpyQAE",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     },
     {
-      "package-name": "lwc-ui-controls-nn",
+      "packageName": "lwc-ui-controls-nn",
+      "versionNumber": "0.1.14.2",
+      "versionId": "04t4T000001dQzpQAE",
+      "password": "Amo3kApMAQzzQx8wnqnjUd"
+    },
+    {
+      "packageName": "not-available-id",
+      "versionId": "04t000000000000000",
       "password": "Amo3kApMAQzzQx8wnqnjUd"
     }
   ]
