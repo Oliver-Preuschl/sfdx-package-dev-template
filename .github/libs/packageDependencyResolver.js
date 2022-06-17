@@ -26,13 +26,13 @@ class DependencyResolver {
     console.log(
       "\n|------------------------------------------------------------"
     );
-    console.log(`| Resolve Dependencies for ${this.dependency.package}`);
+    console.log(`| Resolve Dependencies for ${this.dependency.packageName}`);
     const versionNumbers = this.getPackageVersionNumbersFromVersionString(
       this.dependency.versionNumber
     );
     const subscriberPackageVersionId = await this.getSubscriberPackageVersionId(
       {
-        packageName: this.dependency.package,
+        packageName: this.dependency.packageName,
         majorVersion: versionNumbers.majorVersion,
         minorVersion: versionNumbers.minorVersion,
         buildVersion: versionNumbers.buildVersion,
@@ -42,7 +42,7 @@ class DependencyResolver {
     let dependencySubscriberPackageVersionIdsWithNames =
       await this.getPackageDependencies(
         subscriberPackageVersionId,
-        this.dependency.package
+        this.dependency.packageName
       );
     /*console.log(
       "| dependencySubscriberPackageVersionIdsWithNames",
@@ -75,23 +75,21 @@ class DependencyResolver {
     patchVersion = null,
     buildNumber = null
   } = {}) {
+    if (!majorVersion) {
+      return {};
+    }
+    let versionCriteriaString = this.getVersionCriteria(
+      majorVersion,
+      minorVersion,
+      patchVersion,
+      buildNumber
+    );
     try {
-      if (!majorVersion) {
-        return {};
-      }
-      let versionCriteriaString = this.getVersionCriteria(
-        majorVersion,
-        minorVersion,
-        patchVersion,
-        buildNumber
-      );
       const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE Package2.Name = '${packageName}' ${versionCriteriaString} ORDER BY MajorVersion DESC, MinorVersion DESC, PatchVersion DESC, BuildNumber DESC LIMIT 1" --json`;
       const packageVersion = await execCommand(command);
-      let subscriberPackageVersionId =
-        packageVersion?.result?.records?.[0]?.SubscriberPackageVersionId;
-      return subscriberPackageVersionId;
+      return packageVersion?.result?.records?.[0]?.SubscriberPackageVersionId;
     } catch (e) {
-      console.log(` > Error: ${e.message}`);
+      throw new Error(e.message);
     }
   }
 
@@ -102,7 +100,7 @@ class DependencyResolver {
       if (minorVersion && minorVersion !== "LATEST") {
         versionCriterias.push(`MinorVersion = ${minorVersion}`);
         if (patchVersion && patchVersion !== "LATEST") {
-          versionCriterias.push(`pPatchVersion = ${patchVersion}`);
+          versionCriterias.push(`PatchVersion = ${patchVersion}`);
           if (buildNumber && buildNumber !== "LATEST") {
             versionCriterias.push(`BuildNumber = ${buildNumber}`);
           } else if (buildNumber !== "LATESTRELEASED") {
@@ -137,7 +135,7 @@ class DependencyResolver {
       console.log(`|${"--".repeat(depth)} Package not found in DevHub`);
       return [];
     }
-    let subscriberPackageVersionIdsWithNamesToReturn = [];
+    let subscriberPackageVersionsToReturn = [];
     const installationKey = this.getInstallationKey(packageName, depth);
     const installationKeyCriteria = installationKey
       ? ` AND (InstallationKey='${installationKey}')`
@@ -151,58 +149,66 @@ class DependencyResolver {
         directDependencySubscriberPackageVersions.result.records?.[0]
           ?.Dependencies;
       if (dependencies?.ids) {
-        const directDependencySubscriberpackageVersionIdsWithName =
+        const directDependencySubscriberpackageVersions =
           await this.getDirectDependencySubscriberPackageVersionIdsWithNames(
             dependencies,
             depth + 1
           );
-        for (let directDependencySubscriberPackageVersionIdWithName of directDependencySubscriberpackageVersionIdsWithName) {
+        for (let directDependencySubscriberPackageVersion of directDependencySubscriberpackageVersions) {
           let directDependencyPackageName =
-            directDependencySubscriberPackageVersionIdWithName.packageName;
-          const recursiveDependencyubscriberPackageVersionIdsWithNames =
+            directDependencySubscriberPackageVersion.packageName;
+          const recursiveDependencyubscriberPackageVersions =
             await this.getPackageDependencies(
-              directDependencySubscriberPackageVersionIdWithName.subscriberPackageVersionId,
+              directDependencySubscriberPackageVersion.subscriberPackageVersionId,
               directDependencyPackageName,
               depth + 1
             );
-          subscriberPackageVersionIdsWithNamesToReturn = [
-            ...recursiveDependencyubscriberPackageVersionIdsWithNames,
-            ...subscriberPackageVersionIdsWithNamesToReturn
+          subscriberPackageVersionsToReturn = [
+            ...recursiveDependencyubscriberPackageVersions,
+            ...subscriberPackageVersionsToReturn
           ];
         }
       }
-      subscriberPackageVersionIdsWithNamesToReturn = [
-        ...subscriberPackageVersionIdsWithNamesToReturn,
+      subscriberPackageVersionsToReturn = [
+        ...subscriberPackageVersionsToReturn,
         { subscriberPackageVersionId, packageName, password: installationKey }
       ];
     } catch (e) {
-      console.log(`|${"--".repeat(depth)} > Error: ${e.message}`);
+      console.log(`|${"--".repeat(depth)} > Error: ${JSON.stringify(e)}`);
     }
-    return subscriberPackageVersionIdsWithNamesToReturn;
+    return subscriberPackageVersionsToReturn;
   }
 
   async getDirectDependencySubscriberPackageVersionIdsWithNames(
     dependencies,
     depth = 0
   ) {
-    let directDependencySubscriberPackageVersionIds = dependencies.ids.map(
-      (dependency) => dependency.subscriberPackageVersionId
-    );
-    let directDependencySubscriberPackageVersionId2PackageName =
-      await this.getPackageNamesForPackageSubscriberPackageVersionIds(
-        directDependencySubscriberPackageVersionIds
+    try {
+      let directDependencySubscriberPackageVersionIds = dependencies.ids.map(
+        (dependency) => dependency.subscriberPackageVersionId
       );
-    let directDependencySubscriberPackageVersionIdsWithNames =
-      directDependencySubscriberPackageVersionIds.map(
-        (subscriberPackageVersionId) => ({
-          subscriberPackageVersionId: subscriberPackageVersionId,
-          packageName:
-            directDependencySubscriberPackageVersionId2PackageName.get(
-              subscriberPackageVersionId
-            )
-        })
+      let directDependencySubscriberPackageVersionId2PackageName =
+        await this.getPackageNamesForPackageSubscriberPackageVersionIds(
+          directDependencySubscriberPackageVersionIds
+        );
+      let directDependencySubscriberPackageVersionIdsWithNames =
+        directDependencySubscriberPackageVersionIds.map(
+          (subscriberPackageVersionId) => ({
+            subscriberPackageVersionId: subscriberPackageVersionId,
+            packageName:
+              directDependencySubscriberPackageVersionId2PackageName.get(
+                subscriberPackageVersionId
+              )
+          })
+        );
+      return directDependencySubscriberPackageVersionIdsWithNames;
+    } catch (e) {
+      console.log(
+        "getDirectDependencySubscriberPackageVersionIdsWithNames",
+        JSON.stringify(e)
       );
-    return directDependencySubscriberPackageVersionIdsWithNames;
+      throw new Error(e.message);
+    }
   }
 
   getInstallationKey(packageName, depth) {
@@ -222,16 +228,20 @@ class DependencyResolver {
   async getPackageNamesForPackageSubscriberPackageVersionIds(
     subscriberPackageVersionIds
   ) {
-    const subscriberPackageVersionIdsString =
-      "('" + subscriberPackageVersionIds.join("','") + "')";
-    const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
-    const packageVersionsResponse = await execCommand(command);
-    return new Map(
-      packageVersionsResponse.result.records.map((package2Version) => [
-        package2Version.SubscriberPackageVersionId,
-        package2Version.Package2.Name
-      ])
-    );
+    try {
+      const subscriberPackageVersionIdsString =
+        "('" + subscriberPackageVersionIds.join("','") + "')";
+      const command = `sfdx force:data:soql:query --targetusername=devhub.op@hundw.com --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
+      const packageVersionsResponse = await execCommand(command);
+      return new Map(
+        packageVersionsResponse.result.records.map((package2Version) => [
+          package2Version.SubscriberPackageVersionId,
+          package2Version.Package2.Name
+        ])
+      );
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
 }
 

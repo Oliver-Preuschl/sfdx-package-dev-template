@@ -25,7 +25,7 @@ const execCommand = async (command) => {
       if (!error) {
         resolve(JSON.parse(stdout));
       } else {
-        reject(error + ", " + stdout + ", " + stderr);
+        reject(JSON.parse(stdout));
       }
     });
   });
