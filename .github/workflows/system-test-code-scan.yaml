@@ -43,11 +43,11 @@ jobs:
       - name: "Install Salesforce CLI"
         if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)
         run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
-          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
-          ./sfdx-cli/install
-          sfdx update
+          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
+          export PATH=./sfdx-cli/bin:$PATH
+          echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Install SFDX Plugins"
         if: (steps.get_scanner_setting.outputs.run_sfdx_scanner == 'true') || (steps.get_scanner_setting.outputs.run_sfdx_scanner == true)

@@ -47,12 +47,12 @@ jobs:
       - name: "Install Salesforce CLI"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
         run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
-          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
-          ./sfdx-cli/install
+          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
+          export PATH=./sfdx-cli/bin:$PATH
+          echo "./sfdx-cli/bin" >> $GITHUB_PATH
           sfdx plugins:install texei-sfdx-plugin
-          sfdx update
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)

@@ -22,24 +22,18 @@ const {
   getScratchOrgs,
   getPackageVersions
 } = require("../libs/configProvider.js");
+const parseString = require("xml2js").parseString;
+const { execCommand } = require("../libs/sfdxExecutor.js");
 
 (async function () {
   const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
-
-  console.log("-------ScratchOrgs--------");
-  console.log(JSON.stringify(scratchOrgs, null, 2));
-  console.log("-------PackageVersions--------");
-  console.log(JSON.stringify(packageVersions, null, 2));
-
   let badges = getBadges(packageConfig, packageVersions);
   let expandableScratchOrgsString = getExpandableScratchOrgsString(scratchOrgs);
   let expandablePackageVersionsString =
     getExpandablePackageVersionsString(packageVersions);
-
-  console.log("-------Badges--------");
-  console.log(JSON.stringify(badges, null, 2));
+  let objectMermaidMarkup = getObjectMermaidMarkup();
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
@@ -70,10 +64,15 @@ ${expandablePackageVersionsString}
 
 </details>
 <!-- package-versions:end -->`
+    )
+    .replace(
+      /<!-- objects-erd:start -->[\s\S]*<!-- objects-erd:end -->/g,
+      `<!-- objects-erd:start -->
+\`\`\`mermaid
+${objectMermaidMarkup}
+\`\`\`
+<!-- objects-erd:end -->`
     );
-
-  console.log("-------README--------");
-  console.log(readme);
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {
@@ -167,4 +166,59 @@ function getFormattedDate(dateString) {
   return `${date.getFullYear()}-${
     date.getMonth() + 1
   }-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
+function getObjectMermaidMarkup() {
+  let mermaidMarkup = "erDiagram";
+  if (!fs.existsSync("./2-force-app/main/default/objects")) {
+    return "";
+  }
+  fs.readdirSync("./2-force-app/main/default/objects").forEach((objectName) => {
+    console.log(objectName);
+    let sObjectDefinition = `\n${objectName}{
+Id Id PK`;
+    if (
+      !fs.existsSync(`./2-force-app/main/default/objects/${objectName}/fields`)
+    ) {
+      return;
+    }
+    fs.readdirSync(
+      `./2-force-app/main/default/objects/${objectName}/fields`
+    ).forEach((fieldFile) => {
+      console.log(`  - ${fieldFile}`);
+      const xml = fs.readFileSync(
+        `./2-force-app/main/default/objects/${objectName}/fields/${fieldFile}`,
+        { encoding: "utf8", flag: "r" }
+      );
+      parseString(xml, function (err, json) {
+        if (
+          json.CustomField.type?.[0] === "MasterDetail" ||
+          json.CustomField.type?.[0] === "Lookup"
+        ) {
+          const referenceTo =
+            json.CustomField.referenceTo?.[0] ||
+            json.CustomField.fullName?.[0].replace(/(Id)$/, "");
+          if (referenceTo === "Product" || referenceTo === "Pricebook") {
+            referenceTo += "2";
+          }
+          console.log(`${objectName} -> ${referenceTo}`);
+          const relationshipString =
+            json.CustomField.type?.[0] === "Lookup" ? "|o" : "||";
+          const relationshipName =
+            json.CustomField.relationshipName?.[0] || "-";
+          mermaidMarkup += `\n${referenceTo} ${relationshipString}--o{ ${objectName} : "${relationshipName}"`;
+          sObjectDefinition += `\n${json.CustomField.type?.[0]} ${json.CustomField.fullName?.[0]} FK`;
+        }
+        if (
+          json.CustomField.externalId?.[0] === true ||
+          json.CustomField.externalId?.[0] === "true"
+        ) {
+          sObjectDefinition += `\n${json.CustomField.type?.[0]} ${json.CustomField.fullName?.[0]} FK`;
+        }
+      });
+    });
+    mermaidMarkup += `\n${sObjectDefinition}
+}`;
+  });
+  return mermaidMarkup;
 }

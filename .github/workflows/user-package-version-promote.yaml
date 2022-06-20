@@ -20,7 +20,10 @@ on:
     inputs:
       versionName:
         description: "Version Name"
-        required: true
+        required: false
+
+env:
+  RELEASE_NAME: ${{ github.event.inputs.versionName }}
 
 jobs:
   build:
@@ -36,14 +39,18 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         uses: actions/checkout@v2
 
+      - name: "Install npm dependencies"
+        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        run: npm ci
+
       - name: "Install Salesforce CLI"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
-          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
-          ./sfdx-cli/install
-          sfdx update
+          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
+          export PATH=./sfdx-cli/bin:$PATH
+          echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
@@ -69,6 +76,11 @@ jobs:
           sfdx force:package:version:promote --package $latestVersion --noprompt
           echo "::set-output name=latest_package_version_id::$latestVersion"
 
+      - name: "Get Release Name from Project Config"
+        if: ${{ github.event.inputs.versionName == '' }}
+        run: |
+          echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" >> $GITHUB_ENV
+
       - name: "Create Release"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         id: create_release
@@ -76,8 +88,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "${{ github.event.inputs.versionName }}"
-          release_name: "Release ${{ github.event.inputs.versionName }}"
+          tag_name: "${{ env.RELEASE_NAME }}"
+          release_name: "Release ${{ env.RELEASE_NAME }}"
           body: |
             /packaging/installPackage.apexp?p0=${{ steps.promote_package_version.outputs.latest_package_version_id }}
           draft: false
