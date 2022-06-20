@@ -3,12 +3,15 @@
   "password": "",
   "dependencies": [
     {
-      "package": "sample-package-name",
-      "versionId": "04txxxxxxxxxxxxxxx",
-      "password": "xxx"
+      "packageName": "sample-package-name",
+      "versionNumber": "LATEST",
+      "password": "xxx",
+      "useSamePasswordForDependencies": true
     }
   ],
+  "packageVersionPasswords": {},
   "runSfdxScanner": true,
   "runApexTests": true,
-  "runLwcTests": true
+  "runLwcTests": true,
+  "calculatedDependencies": []
 }

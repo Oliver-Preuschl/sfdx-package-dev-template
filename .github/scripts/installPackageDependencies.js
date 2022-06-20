@@ -23,11 +23,11 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   const userName = process.argv[2];
 
   const packageConfig = getPackageConfig();
-  const dependencies = packageConfig.dependencies || [];
+  const dependencies = packageConfig.calculatedDependencies || [];
 
   let numberOfPackages = 0;
   for (let dependency of dependencies) {
-    if (dependency.package === "sample-package-name") {
+    if (dependency.packageName === "sample-package-name") {
       console.log(
         'Skipping installation of sample package ("sample-package-name")'
       );
@@ -38,7 +38,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
       "--------------------------------------------------------------------"
     );
     console.log(
-      `${numberOfPackages} - Installing package - "${dependency.package}" - VersionId: "${dependency.versionId}"`
+      `${numberOfPackages} - Installing package - "${dependency.packageName}" - VersionId: "${dependency.versionId}"`
     );
     let installationResponse;
     try {
@@ -58,12 +58,12 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
         );
       }
       console.log(
-        `${numberOfPackages} - Package installed - "${dependency.package}"  - VersionId: "${dependency.versionId}"`
+        `${numberOfPackages} - Package installed - "${dependency.packageName}"  - VersionId: "${dependency.versionId}"`
       );
     } catch (e) {
       console.log(
         `${numberOfPackages} - Error during Package Installation - "${
-          dependency.package
+          dependency.packageName
         }"  - "${JSON.stringify(e)}"`
       );
     }

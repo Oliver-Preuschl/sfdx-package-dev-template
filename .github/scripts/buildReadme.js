@@ -163,7 +163,9 @@ ${JSON.stringify(packageVersion, null, 2)}
 
 function getFormattedDate(dateString) {
   const date = new Date(dateString);
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+  return `${date.getFullYear()}-${
+    date.getMonth() + 1
+  }-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
 
 function getObjectMermaidMarkup() {

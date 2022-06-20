@@ -6,7 +6,30 @@
     },
     {
       "path": "2-force-app",
-      "default": true
+      "default": true,
+      "dependencies": [
+        {
+          "package": "apex-core"
+        },
+        {
+          "package": "apex-logger"
+        },
+        {
+          "package": "apex-test-data"
+        },
+        {
+          "package": "apex-record-mass-processor"
+        },
+        {
+          "package": "lwc-core-nn"
+        },
+        {
+          "package": "lwc-ui-controls-nn"
+        },
+        {
+          "package": "not-available-id"
+        }
+      ]
     },
     {
       "path": "3-force-apex-test",
@@ -19,5 +42,14 @@
   ],
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "51.0"
+  "sourceApiVersion": "51.0",
+  "packageAliases": {
+    "apex-core": "04t4T000001puQUQAY",
+    "apex-logger": "04t4T000001puKWQAY",
+    "apex-test-data": "04t4T000001dQqDQAU",
+    "apex-record-mass-processor": "04t4T000001puTOQAY",
+    "lwc-core-nn": "04t4T000001dQpyQAE",
+    "lwc-ui-controls-nn": "04t4T000001dQzpQAE",
+    "not-available-id": "04t000000000000000"
+  }
 }
