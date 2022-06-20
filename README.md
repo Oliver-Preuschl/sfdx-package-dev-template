@@ -60,13 +60,13 @@ Before you start with the actual package development you should configure your p
 
 The following attributes can be used for each package dependency.
 
-|           Attribute            | Description                                                                                                                                                  | Restrictions                                                                                                                   | Required?                                      |
-| :----------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
-|          packageName           | The name of the package.                                                                                                                                     |                                                                                                                                | Yes                                            |
-|         versionNumber          | The version number of the package. The keywords _LATEST_ and _LATESTRELEASED_ can be used as placeholders for major, minor, patch and build version numbers. | Just working for packages, which are assigned to the connected DevHub. For external pakages the versionId has to be specified. | Version number or version id has to specified. |
-|           versionId            | The version id of the package. Is usually used for external packages.                                                                                        |                                                                                                                                | Version number or version id has to specified. |
-|            password            | Specifies if the sfdx-scanner should be executed, whenever a pull request is merged.                                                                         |                                                                                                                                | No                                             |
-| useSamePasswordForDependencies | Specifies if all Apex tests should be executed, whenever a pull request is merged.                                                                           | Just working for packages, which are assigned to the connected DevHub.                                                         | No                                             |
+|           Attribute            | Description                                                                                                                                                                                                                     | Restrictions                                                                                                                   | Required?                                      |
+| :----------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+|          packageName           | The name of the package.                                                                                                                                                                                                        |                                                                                                                                | Yes                                            |
+|         versionNumber          | The version number of the package. The keywords _LATEST_ and _LATESTRELEASED_ can be used as placeholders for major, minor, patch and build version numbers.                                                                    | Just working for packages, which are assigned to the connected DevHub. For external pakages the versionId has to be specified. | Version number or version id has to specified. |
+|           versionId            | The version id of the package. Is usually used for external packages.                                                                                                                                                           |                                                                                                                                | Version number or version id has to specified. |
+|            password            | Specifies the password for the package version.                                                                                                                                                                                 |                                                                                                                                | No                                             |
+| useSamePasswordForDependencies | Specifies if the password should also be used for all dependencies, which are found for this package. If passwords are different for these dependencies, they have to be configured in the _packageVersionPasswords_ attribute. | Just working for packages, which are assigned to the connected DevHub.                                                         | No                                             |
 
 Please note that the dependencies in the sfdx-package.json will overwrite existing dependencies in sfdx-project.json. This allows to automatically calculate all necessary dependencies recursively and update the sfdx-project.json accordingly.
 
@@ -75,7 +75,7 @@ However, there is one restriction: This automatism is just working for those pac
 Examples:
 
 ```
-"dependencies": [
+  "dependencies": [
     {
       "packageName": "dev-hub-internal-package-1",
       "versionNumber": "LATEST",
@@ -108,6 +108,15 @@ Examples:
       "password": "password"
     }
   ],
+```
+
+If there are dependencies for a single package, which require a different password, these need to be speified in the _packageVersionPasswords_ attribute as stated in the following example.
+
+```
+  "packageVersionPasswords": {
+    "sample-package-name-1": "xxx",
+    "sample-package-name-2": "yyy"
+  }
 ```
 
 The template is structured in a way, that allows for additional ways of dependency installation for existing or newly created scratch orgs. The following table describes the sequence of actions, which are executed, whenever a new scratch-org is created or when the workflow is executed manually.
