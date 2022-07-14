@@ -140,39 +140,46 @@ async function getSortedPackageVersions(subscriberPackageVersions) {
     let subscriberPackageVersionId2Name = getSubsriberPackageVersionId2NameMap(
       subscriberPackageVersions
     );
-    let packageId2PackageVersion = new Map();
+    let devHubAvailablePackageId2PackageVersion = new Map();
     devHubAvailablePackageVersionsResponse.result.records.forEach(
       (devHubPackage2Version) => {
         if (
-          isPackageRelevant(devHubPackage2Version, packageId2PackageVersion)
+          isPackageRelevant(
+            devHubPackage2Version,
+            devHubAvailablePackageId2PackageVersion
+          )
         ) {
-          packageId2PackageVersion.set(devHubPackage2Version.Package2Id, {
-            packageId: devHubPackage2Version.Package2Id,
-            packageName: devHubPackage2Version.Package2.Name,
-            subscriberPackageVersionId:
-              devHubPackage2Version.SubscriberPackageVersionId,
-            versionNumber: `${devHubPackage2Version.MajorVersion}.${devHubPackage2Version.MinorVersion}.${devHubPackage2Version.PatchVersion}.${devHubPackage2Version.BuildNumber}`,
-            password: subscriberPackageVersionId2Name.get(
-              devHubPackage2Version.SubscriberPackageVersionId
-            ).password
-          });
+          devHubAvailablePackageId2PackageVersion.set(
+            devHubPackage2Version.Package2Id,
+            {
+              packageId: devHubPackage2Version.Package2Id,
+              packageName: devHubPackage2Version.Package2.Name,
+              subscriberPackageVersionId:
+                devHubPackage2Version.SubscriberPackageVersionId,
+              versionNumber: `${devHubPackage2Version.MajorVersion}.${devHubPackage2Version.MinorVersion}.${devHubPackage2Version.PatchVersion}.${devHubPackage2Version.BuildNumber}`,
+              password: subscriberPackageVersionId2Name.get(
+                devHubPackage2Version.SubscriberPackageVersionId
+              ).password
+            }
+          );
         }
       }
     );
     const sortedPackageNames = getSortedPackageNameList(
       subscriberPackageVersions
     );
-    let packageVersionsToReturn = Array.from(packageId2PackageVersion.values());
-    packageVersionsToReturn.sort(comparePackageVersions(sortedPackageNames));
-    const devHubUnavailablePackageVersions =
-      getDevHubUnavailablePackageVersions(
-        subscriberPackageVersions,
-        packageVersionsToReturn
-      );
-    packageVersionsToReturn = [
-      ...packageVersionsToReturn,
+    let devHubAvailablePackageVersionsToReturn = Array.from(
+      devHubAvailablePackageId2PackageVersion.values()
+    );
+    let devHubUnavailablePackageVersions = getDevHubUnavailablePackageVersions(
+      subscriberPackageVersions,
+      devHubAvailablePackageVersionsToReturn
+    );
+    let packageVersionsToReturn = [
+      ...devHubAvailablePackageVersionsToReturn,
       ...devHubUnavailablePackageVersions
     ];
+    packageVersionsToReturn.sort(comparePackageVersions(sortedPackageNames));
 
     return packageVersionsToReturn;
   } catch (e) {
