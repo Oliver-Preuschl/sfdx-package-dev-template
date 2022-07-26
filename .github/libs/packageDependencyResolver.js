@@ -95,24 +95,40 @@ class DependencyResolver {
 
   getVersionCriteria(majorVersion, minorVersion, patchVersion, buildNumber) {
     let versionCriterias = [];
-    if (majorVersion && majorVersion !== "LATEST") {
+    if (
+      majorVersion &&
+      majorVersion !== "LATEST" &&
+      majorVersion !== "LATESTRELEASED"
+    ) {
       versionCriterias.push(`MajorVersion = ${majorVersion}`);
-      if (minorVersion && minorVersion !== "LATEST") {
+      if (
+        minorVersion &&
+        minorVersion !== "LATEST" &&
+        minorVersion !== "LATESTRELEASED"
+      ) {
         versionCriterias.push(`MinorVersion = ${minorVersion}`);
-        if (patchVersion && patchVersion !== "LATEST") {
+        if (
+          patchVersion &&
+          patchVersion !== "LATEST" &&
+          patchVersion !== "LATESTRELEASED"
+        ) {
           versionCriterias.push(`PatchVersion = ${patchVersion}`);
-          if (buildNumber && buildNumber !== "LATEST") {
+          if (
+            buildNumber &&
+            buildNumber !== "LATEST" &&
+            buildNumber !== "LATESTRELEASED"
+          ) {
             versionCriterias.push(`BuildNumber = ${buildNumber}`);
-          } else if (buildNumber !== "LATESTRELEASED") {
+          } else if (buildNumber === "LATESTRELEASED") {
             versionCriterias.push(`IsReleased = true`);
           }
-        } else if (patchVersion !== "LATESTRELEASED") {
+        } else if (patchVersion === "LATESTRELEASED") {
           versionCriterias.push(`IsReleased = true`);
         }
-      } else if (minorVersion !== "LATESTRELEASED") {
+      } else if (minorVersion === "LATESTRELEASED") {
         versionCriterias.push(`IsReleased = true`);
       }
-    } else if (majorVersion !== "LATESTRELEASED") {
+    } else if (majorVersion === "LATESTRELEASED") {
       versionCriterias.push(`IsReleased = true`);
     }
     let versionCriteriaString = "";
