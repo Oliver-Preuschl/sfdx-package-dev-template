@@ -91,7 +91,6 @@ const {
       }
     );
 
-    projectConfig.packageAliases = {};
     packageVersions.forEach((packageVersion) => {
       projectConfig.packageAliases[packageVersion.packageName] =
         packageVersion.subscriberPackageVersionId;
