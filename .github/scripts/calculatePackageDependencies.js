@@ -156,6 +156,10 @@ async function getSortedPackageVersions(subscriberPackageVersions) {
               subscriberPackageVersionId:
                 devHubPackage2Version.SubscriberPackageVersionId,
               versionNumber: `${devHubPackage2Version.MajorVersion}.${devHubPackage2Version.MinorVersion}.${devHubPackage2Version.PatchVersion}.${devHubPackage2Version.BuildNumber}`,
+              MajorVersion: devHubPackage2Version.MajorVersion,
+              MinorVersion: devHubPackage2Version.MinorVersion,
+              PatchVersion: devHubPackage2Version.PatchVersion,
+              BuildNumber: devHubPackage2Version.BuildNumber,
               password: subscriberPackageVersionId2Name.get(
                 devHubPackage2Version.SubscriberPackageVersionId
               ).password
