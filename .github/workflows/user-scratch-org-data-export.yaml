@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  PullSourceFromScratchOrg:
+  ExportDataFromScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
