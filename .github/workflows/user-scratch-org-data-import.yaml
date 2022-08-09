@@ -1,0 +1,81 @@
+# Copyright 2021 Oliver Preuschl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: "user:data:import [feature]"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  PullSourceFromScratchOrg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        id: extract_branch_name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
+      - name: "Checkout source code"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        uses: actions/checkout@v2
+
+      - name: "Install Salesforce CLI"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: |
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir sfdx-cli
+          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
+          export PATH=./sfdx-cli/bin:$PATH
+          echo "./sfdx-cli/bin" >> $GITHUB_PATH
+          sfdx plugins:install sfdmu
+
+      - name: "Populate auth file with DEVHUB_AUTH_URL secret"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        shell: bash
+        run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
+
+      - name: "Authenticate Dev Hub"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+
+      - name: "Get Branch Name"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        id: get_branch_name
+        run: |
+          branchname='${{ steps.extract_branch_name.outputs.branch }}'
+          branchname="${branchname//[^0-9a-zA-Z_]/_}"
+          echo "::set-output name=branch_name::$branchname"
+
+      - name: "Get Scratch-Org-Auth-URL"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        id: get_scratch_org_auth_url
+        run: |
+          chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
+          authurl=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ steps.get_branch_name.outputs.branch_name }}")
+          echo "::set-output name=auth_url::$authurl"
+
+      - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: |
+          authurl=${{ steps.get_scratch_org_auth_url.outputs.auth_url }}
+          echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+
+      - name: "Authenticate Scratch Org"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+
+      - name: "Import Data from ScratchOrg"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt

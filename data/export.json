@@ -1,0 +1,9 @@
+{
+  "objects": [
+    {
+      "query": "SELECT Id, Name FROM Account",
+      "operation": "Upsert",
+      "externalId": "Name"
+    }
+  ]
+}
