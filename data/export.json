@@ -3,7 +3,8 @@
     {
       "query": "SELECT all FROM Contact",
       "operation": "Upsert",
-      "externalId": "Name"
+      "externalId": "Name",
+      "master": false
     },
     {
       "query": "SELECT all FROM Account",
