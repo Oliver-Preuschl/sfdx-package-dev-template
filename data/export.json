@@ -1,7 +1,12 @@
 {
   "objects": [
     {
-      "query": "SELECT Id, Name FROM Account",
+      "query": "SELECT all FROM Contact",
+      "operation": "Upsert",
+      "externalId": "Name"
+    },
+    {
+      "query": "SELECT all FROM Account",
       "operation": "Upsert",
       "externalId": "Name"
     }

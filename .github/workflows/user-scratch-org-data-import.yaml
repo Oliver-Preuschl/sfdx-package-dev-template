@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  PullSourceFromScratchOrg:
+  ImportDataIntoScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
@@ -76,6 +76,6 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
-      - name: "Import Data from ScratchOrg"
+      - name: "Import Data into ScratchOrg"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt
