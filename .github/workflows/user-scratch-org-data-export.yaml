@@ -78,7 +78,7 @@ jobs:
 
       - name: "Export Data from ScratchOrg"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
-        run: sfdx sfdmu:run --sourceusername scratchorg --targetusername csvfile --path data --noprompt --filelog
+        run: sfdx sfdmu:run --sourceusername scratchorg --targetusername csvfile --path data --noprompt --verbose --filelog
 
       - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
@@ -86,5 +86,5 @@ jobs:
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
           git add data
-          git commit -m "Exported Test Data"
+          git commit -m "Test Data exported"
           git push

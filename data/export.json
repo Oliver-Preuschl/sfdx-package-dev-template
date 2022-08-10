@@ -1,15 +1,13 @@
 {
   "objects": [
     {
-      "query": "SELECT all FROM Account",
+      "query": "SELECT Name FROM Account",
       "operation": "Insert",
-      "externalId": "Name",
       "master": true
     },
     {
-      "query": "SELECT all FROM Contact",
+      "query": "SELECT createable_true FROM Contact",
       "operation": "Insert",
-      "externalId": "Name",
       "master": false
     }
   ]
