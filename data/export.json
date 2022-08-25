@@ -1,13 +1,15 @@
 {
   "objects": [
     {
-      "query": "SELECT Name FROM Account",
-      "operation": "Insert",
+      "query": "SELECT Name, Phone FROM Account",
+      "operation": "Upsert",
+      "externalId": "Name",
       "master": true
     },
     {
-      "query": "SELECT createable_true FROM Contact",
-      "operation": "Insert",
+      "query": "SELECT updateable_true FROM Contact",
+      "operation": "Upsert",
+      "externalId": "LastName",
       "master": false
     }
   ]

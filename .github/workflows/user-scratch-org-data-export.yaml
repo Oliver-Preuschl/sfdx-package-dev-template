@@ -82,6 +82,7 @@ jobs:
 
       - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        continue-on-error: true
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
