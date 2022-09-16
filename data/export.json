@@ -1,0 +1,16 @@
+{
+  "objects": [
+    {
+      "query": "SELECT Name, Phone FROM Account",
+      "operation": "Upsert",
+      "externalId": "Name",
+      "master": true
+    },
+    {
+      "query": "SELECT updateable_true FROM Contact",
+      "operation": "Upsert",
+      "externalId": "LastName",
+      "master": false
+    }
+  ]
+}

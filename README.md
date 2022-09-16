@@ -33,15 +33,16 @@ However, since the workflows used in the repository need access to your Salesfor
 
 Once the repository is created and the secrets are set up the following functionalities are available.
 
-| Name                                                |   Trigger Type   | Description                                                                                                                                                                                                                                                                                                                                                                            |
-| --------------------------------------------------- | :--------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Advanced dependency management                      |    Automatic     | Dependencies to other packages will be configured in sfdx-package.json instead of sfdx-project.json. sfdx-project.json will be automatically updated with the direct and indirect dependent packages (recursively) whenever the sfdx-package.json is updated. Additionally, LATEST and LATESTRELEASED keywords can be used to specify the latest major, minor, patch or build version. |
-| Scratch org generation                              | Automatic/Manual | A new scratch org gets automatically generated whenever a branch is created (workflow "system:scratch-org:create [create:feature]"). Additionally, the workflow "system:scratch-org:create [create:feature]" can be used to display the scratch org login URL. If the scratch org is not available or has already expired, a new one will be automatically generated.                  |
-| Pulling from / pushing to a scratch org             |      Manual      | The source can be pushed to / pulled from the scratch org by manually executing the workflows "user:source:push [feature]" and "user:source:pull [feature]"                                                                                                                                                                                                                            |
-| Apex / LWC test runs & Apex / Javascript code scans |    Automatic     | Depending on your configuration (sfdx-package.json) all Apex tests and LWC tests will be automatically run in a freshly created scratch org whenever a pull request is opened (workflows: "system:test:apex-tests", "system:test:lwc-tests"). Additionally, if configured, the sfdx-scanner will be executed.                                                                          |
-| Package version generation                          |    Automatic     | After a pull request is merged in the master branch a new package version gets automatically generated (workflow: `"system:package:version:create [push:master]"`).                                                                                                                                                                                                                    |
-| Package version promotion                           |      Manual      | The latest package version can be promoted by manually executing the workflow `"user:package:version:promote [master]"`                                                                                                                                                                                                                                                                |
-| Documentation                                       |    Automatic     | New scratch orgs, package versions and an SObject ER diagram will be automatically documented in the README                                                                                                                                                                                                                                                                            |
+| Name                                                              |   Trigger Type   | Description                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------- | :--------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Advanced dependency management                                    |    Automatic     | Dependencies to other packages will be configured in sfdx-package.json instead of sfdx-project.json. sfdx-project.json will be automatically updated with the direct and indirect dependent packages (recursively) whenever the sfdx-package.json is updated. Additionally, LATEST and LATESTRELEASED keywords can be used to specify the latest major, minor, patch or build version. |
+| Scratch org generation                                            | Automatic/Manual | A new scratch org gets automatically generated whenever a branch is created (workflow "system:scratch-org:create [create:feature]"). Additionally, the workflow "system:scratch-org:create [create:feature]" can be used to display the scratch org login URL. If the scratch org is not available or has already expired, a new one will be automatically generated.                  |
+| Pulling from / pushing to a scratch org                           |      Manual      | The source can be pushed to / pulled from the scratch org by manually executing the workflows "user:source:push [feature]" and "user:source:pull [feature]"                                                                                                                                                                                                                            |
+| Exporting test data from / importing test data into a scratch org | Automatic/Manual | The test data can be exported from / imported into the scratch org by manually executing the workflows "user:data:export [feature]" and "user:data:import [feature]". Besides that, existing test data will be imported automatically into newly created scratch orgs.                                                                                                                 |
+| Apex / LWC test runs & Apex / Javascript code scans               |    Automatic     | Depending on your configuration (sfdx-package.json) all Apex tests and LWC tests will be automatically run in a freshly created scratch org whenever a pull request is opened (workflows: "system:test:apex-tests", "system:test:lwc-tests"). Additionally, if configured, the sfdx-scanner will be executed.                                                                          |
+| Package version generation                                        |    Automatic     | After a pull request is merged in the master branch a new package version gets automatically generated (workflow: `"system:package:version:create [push:master]"`).                                                                                                                                                                                                                    |
+| Package version promotion                                         |      Manual      | The latest package version can be promoted by manually executing the workflow `"user:package:version:promote [master]"`                                                                                                                                                                                                                                                                |
+| Documentation                                                     |    Automatic     | New scratch orgs, package versions and an SObject ER diagram will be automatically documented in the README                                                                                                                                                                                                                                                                            |
 
 ## Package Configuration
 
@@ -174,6 +175,33 @@ Sample of complete sfdx-project.json file:
   "sourceApiVersion": "51.0"
 }
 ```
+
+## Test Data Configuration
+
+The integrated test data functionality makes use of the SFDX plugin [SFDMU](https://help.sfdmu.com/quick-start). To make sure the relevant test data gets exported/imported the required SObjects need to be configured in the file data/export.json.
+
+Sample of the export.json:
+
+```json
+{
+  "objects": [
+    {
+      "query": "SELECT Name, Phone FROM Account",
+      "operation": "Upsert",
+      "externalId": "Name",
+      "master": true
+    },
+    {
+      "query": "SELECT updateable_true FROM Contact",
+      "operation": "Upsert",
+      "externalId": "LastName",
+      "master": false
+    }
+  ]
+}
+```
+
+A detailed documentation of the complete export.json format can be found [here](https://help.sfdmu.com/full-documentation/configuration-and-running/full-exportjson-format).
 
 ## Workflow
 

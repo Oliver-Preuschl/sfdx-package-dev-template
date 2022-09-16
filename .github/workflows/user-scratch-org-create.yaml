@@ -47,6 +47,7 @@ jobs:
           tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
           export PATH=./sfdx-cli/bin:$PATH
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
+          sfdx plugins:install sfdmu
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
@@ -125,3 +126,17 @@ jobs:
       - name: "Push Source to ScratchOrg"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx force:source:push"
+
+      - name: "Import Data into ScratchOrg"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: sfdx sfdmu:run --sourceusername csvfile --targetusername "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --path data --noprompt --verbose --filelog
+
+      - name: "Commit Changes"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        continue-on-error: true
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add data
+          git commit -m "Test Data imported"
+          git push

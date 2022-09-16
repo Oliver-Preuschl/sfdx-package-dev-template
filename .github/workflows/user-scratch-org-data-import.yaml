@@ -13,18 +13,13 @@
 # limitations under the License.
 #
 
-name: "user:scratch-org:dependencies:install [feature]"
+name: "user:data:import [feature]"
 
 on:
   workflow_dispatch:
-    inputs:
-      pushSource:
-        type: boolean
-        description: Push Source after installation
-        required: false
 
 jobs:
-  InstallDependencies:
+  ImportDataIntoScratchOrg:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
@@ -44,6 +39,7 @@ jobs:
           tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
           export PATH=./sfdx-cli/bin:$PATH
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
+          sfdx plugins:install sfdmu
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
@@ -80,17 +76,16 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
 
-      - name: "Deploy Org-Dependencies to ScratchOrg"
+      - name: "Import Data into ScratchOrg"
+        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt --verbose --filelog
+
+      - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         continue-on-error: true
-        run: "sfdx force:source:deploy -p 0-force-org-dependency --ignorewarnings --ignoreerrors"
-
-      - name: "Install SFDX-Project-Dependencies"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
         run: |
-          chmod +x ./.github/scripts/installPackageDependencies.js
-          node ./.github/scripts/installPackageDependencies.js scratchorg
-
-      - name: "Push Source to ScratchOrg"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' && github.event.inputs.pushSource == 'true' }}
-        run: "sfdx force:source:push --forceoverwrite --ignorewarnings"
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add data
+          git commit -m "Test Data imported"
+          git push

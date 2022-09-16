@@ -1,0 +1,11 @@
+{
+  "versions": [
+    {
+      "version": "1.1.0",
+      "releaseNotes": [
+        "Added test data management",
+        "Fixed smaller issue in dependency installation & source pushing"
+      ]
+    }
+  ]
+}
