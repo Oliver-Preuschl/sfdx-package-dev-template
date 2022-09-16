@@ -3,10 +3,8 @@
     {
       "version": "1.1.0",
       "releaseNotes": [
-        {
-          "version": "1.1.0",
-          "description": "Added test data management"
-        }
+        "Added test data management",
+        "Fixed smaller issue in dependency installation & source pushing"
       ]
     }
   ]
