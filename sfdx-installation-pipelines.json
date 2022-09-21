@@ -1,0 +1,29 @@
+{
+  "piepelines": [
+    {
+      "name": "INT - PRE",
+      "orgs": [
+        {
+          "name": "INT",
+          "SfdxAuthUrlSecret": "AuthUrl_Int",
+          "isPrometedVersionRequired": false
+        },
+        {
+          "name": "PRE",
+          "SfdxAuthUrlSecret": "AuthUrl_Pre",
+          "isPrometedVersionRequired": false
+        }
+      ]
+    },
+    {
+      "name": "PROD",
+      "orgs": [
+        {
+          "name": "PROD",
+          "SfdxAuthUrlSecret": "AuthUrl_Prod",
+          "isPrometedVersionRequired": true
+        }
+      ]
+    }
+  ]
+}
