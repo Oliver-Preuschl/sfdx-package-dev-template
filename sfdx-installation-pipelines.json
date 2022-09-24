@@ -1,17 +1,29 @@
 {
-  "piepelines": [
+  "availableValues": {
+    "versionTypeToInstall": ["Latest", "LatestReleased"],
+    "securityType": ["AllUsers", "AdminsOnly"],
+    "upgradeType": ["DeprecateOnly", "Mixed", "Delete"],
+    "apexCompile": ["all", "package"]
+  },
+  "pipelines": [
     {
       "name": "INT - PRE",
       "orgs": [
         {
           "name": "INT",
-          "SfdxAuthUrlSecret": "AuthUrl_Int",
-          "isPrometedVersionRequired": false
+          "sfdxAuthUrlSecret": "AUTH_URL_INT",
+          "versionTypeToInstall": "Latest",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
         },
         {
           "name": "PRE",
-          "SfdxAuthUrlSecret": "AuthUrl_Pre",
-          "isPrometedVersionRequired": false
+          "sfdxAuthUrlSecret": "AUTH_URL_PRE",
+          "versionTypeToInstall": "Latest",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
         }
       ]
     },
@@ -20,8 +32,11 @@
       "orgs": [
         {
           "name": "PROD",
-          "SfdxAuthUrlSecret": "AuthUrl_Prod",
-          "isPrometedVersionRequired": true
+          "sfdxAuthUrlSecret": "AuthUrl_Prod",
+          "versionTypeToInstall": "LatestReleased",
+          "securityType": "AllUsers",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
         }
       ]
     }

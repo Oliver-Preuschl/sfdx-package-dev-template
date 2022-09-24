@@ -1,0 +1,33 @@
+{
+  "orgs": {
+    "INT": {
+      "installations": [
+        {
+          "success": true,
+          "date": "2022-09-14",
+          "subscriberPackageVersionId": "04t09000000vCwoAAE",
+          "packageVersionName": "ver 0.1",
+          "pakageVersion": "0.1.0.1"
+        },
+        {
+          "success": true,
+          "date": "2022-09-24",
+          "subscriberPackageVersionId": "04t09000000vCwoAAE",
+          "packageVersionName": "ver 0.1",
+          "pakageVersion": "0.1.0.2"
+        }
+      ]
+    },
+    "PRE": {
+      "installations": [
+        {
+          "success": true,
+          "date": "2022-09-24",
+          "subscriberPackageVersionId": "04t09000000vCwoAAE",
+          "packageVersionName": "ver 0.1",
+          "pakageVersion": "0.1.0.1"
+        }
+      ]
+    }
+  }
+}

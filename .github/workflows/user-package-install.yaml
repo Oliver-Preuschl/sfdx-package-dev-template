@@ -15,7 +15,51 @@
 
 name: "user:package:install"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pipeline:
+        type: choice
+        description: Pipeline
+        required: true
+        default: "INT - PRE"
+        options:
+          - INT - PRE
+          - PROD
+    #  versionTypeToInstall:
+    #    type: choice
+    #    description: Version to install
+    #    required: true
+    #    default: 'Latest'
+    #    options:
+    #      - Latest
+    #      - LatestReleased
+    #  securityType:
+    #    type: choice
+    #    description: Security Access Type for the Installed Package
+    #    required: true
+    #    default: 'AdminsOnly'
+    #    options:
+    #      - AllUsers
+    #      - AdminsOnly
+    #  upgradeType:
+    #    type: choice
+    #    description: Upgrade Type
+    #    required: true
+    #    default: 'Mixed'
+    #    options:
+    #      - DeprecateOnly
+    #      - Mixed
+    #      - Delete
+    #
+    #  apexCompile:
+    #    type: choice
+    #    description: Apex Class Compilation
+    #    required: true
+    #    default: 'all'
+    #    options:
+    #      - all
+    #      - package
 
 jobs:
   InstallPackageVersionsInPipelineOrgs:
@@ -48,8 +92,19 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
 
-      - name: "Install Packe Versions"
+      - name: "Install Package Versions"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         run: |
           chmod +x ./.github/scripts/installPackageVersionsInPipelineOrgs.js
-          node ./.github/scripts/installPackageVersionsInPipelineOrgs.js ${{ toJSON(secrets) }}
+          node ./.github/scripts/installPackageVersionsInPipelineOrgs.js "$SECRETS_CONTEXT" "${{ github.event.inputs.pipeline }}"
+        #  node ./.github/scripts/installPackageVersionsInPipelineOrgs.js "${{ toJSON(secrets) }}" "${{ github.event.inputs.versionTypeToInstall }}" "${{ github.event.inputs.securityType }}" "${{ github.event.inputs.upgradeType }}" "${{ github.event.inputs.apexCompile }}"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+
+      - name: "Commit Changes"
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email activation@hundw.com
+          git add sfdx-package-version-installations.json
+          git commit -m "Package Version installed"
+          git push

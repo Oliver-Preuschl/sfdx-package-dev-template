@@ -20,10 +20,12 @@ const fs = require("fs");
 const {
   getPackageConfig,
   getScratchOrgs,
-  getPackageVersions
+  getPackageVersions,
+  getPackageVersionInstallations
 } = require("../libs/configProvider.js");
 const parseString = require("xml2js").parseString;
-const { execCommand } = require("../libs/sfdxExecutor.js");
+
+const _MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 (async function () {
   const packageConfig = getPackageConfig();
@@ -34,6 +36,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   let expandablePackageVersionsString =
     getExpandablePackageVersionsString(packageVersions);
   let objectMermaidMarkup = getObjectMermaidMarkup();
+  let installationStatusMermaidMarkup = getInstallationStatusMermaidMarkup();
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
@@ -72,6 +75,14 @@ ${expandablePackageVersionsString}
 ${objectMermaidMarkup}
 \`\`\`
 <!-- objects-erd:end -->`
+    )
+    .replace(
+      /<!-- installation-history:start -->[\s\S]*<!-- installation-history:end -->/g,
+      `<!-- installation-history:start -->
+\`\`\`mermaid
+${installationStatusMermaidMarkup}
+\`\`\`
+<!-- installation-history:end -->`
     );
 
   fs.writeFile("./README.md", readme, (error) => {
@@ -195,7 +206,7 @@ Id Id PK`;
           json.CustomField.type?.[0] === "MasterDetail" ||
           json.CustomField.type?.[0] === "Lookup"
         ) {
-          const referenceTo =
+          let referenceTo =
             json.CustomField.referenceTo?.[0] ||
             json.CustomField.fullName?.[0].replace(/(Id)$/, "");
           if (referenceTo === "Product" || referenceTo === "Pricebook") {
@@ -221,4 +232,54 @@ Id Id PK`;
 }`;
   });
   return mermaidMarkup;
+}
+
+function getInstallationStatusMermaidMarkup() {
+  let mermaidMarkup = `gantt
+  
+      title Version History
+      dateFormat  YYYY-MM-DD
+  `;
+  const packageVersionInstallations = getPackageVersionInstallations();
+  for (let orgName in packageVersionInstallations.orgs) {
+    const org = packageVersionInstallations.orgs[orgName];
+    mermaidMarkup += `\nsection ${orgName}`;
+    let firstInstallation = true;
+    org.installations.forEach((installation, installationIndex) => {
+      let endDate;
+      if (installationIndex + 1 < org.installations.length) {
+        console.log(`Getting installation "${installationIndex + 1}"`);
+        endDate = new Date(org.installations[installationIndex + 1].date);
+      } else {
+        endDate = new Date();
+      }
+      console.log("StartDate", new Date(installation.date));
+      console.log("EndDate", endDate);
+      if (firstInstallation) {
+        mermaidMarkup += `\n${installation.pakageVersion}: ${
+          installation.date
+        },${dateDiffInDays(new Date(installation.date), endDate)}d`;
+        console.log(
+          `Adding: ${installation.pakageVersion}: ${
+            installation.date
+          },${dateDiffInDays(new Date(installation.date), endDate)}d`
+        );
+      } else {
+        mermaidMarkup += `\n${installation.pakageVersion}: ${dateDiffInDays(
+          new Date(installation.date),
+          endDate
+        )}d`;
+      }
+      firstInstallation = false;
+    });
+  }
+  return mermaidMarkup;
+}
+
+function dateDiffInDays(a, b) {
+  // Discard the time and time-zone information.
+  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+  return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }

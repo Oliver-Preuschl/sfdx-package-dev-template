@@ -26,6 +26,12 @@ const getPackageConfig = () => {
   return JSON.parse(fs.readFileSync("./sfdx-package.json", "utf8"));
 };
 
+const getInstallationPipelinesConfig = () => {
+  return JSON.parse(
+    fs.readFileSync("./sfdx-installation-pipelines.json", "utf8")
+  );
+};
+
 const getScratchOrgs = () => {
   return JSON.parse(fs.readFileSync("./sfdx-scratch-orgs.json", "utf8"));
 };
@@ -34,7 +40,19 @@ const getPackageVersions = () => {
   return JSON.parse(fs.readFileSync("./sfdx-package-versions.json", "utf8"));
 };
 
+const getPackageVersionInstallations = () => {
+  try {
+    return JSON.parse(
+      fs.readFileSync("./sfdx-package-version-installations.json", "utf8")
+    );
+  } catch (e) {
+    return {};
+  }
+};
+
 exports.getProjectConfig = getProjectConfig;
 exports.getPackageConfig = getPackageConfig;
+exports.getInstallationPipelinesConfig = getInstallationPipelinesConfig;
 exports.getScratchOrgs = getScratchOrgs;
 exports.getPackageVersions = getPackageVersions;
+exports.getPackageVersionInstallations = getPackageVersionInstallations;

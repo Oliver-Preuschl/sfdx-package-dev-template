@@ -1,6 +1,11 @@
 <!-- badges:start -->
 <!-- badges:end -->
 
+## Installation History
+
+<!-- installation-history:start -->
+<!-- installation-history:end -->
+
 ## Scratch Orgs
 
 <!-- scratch-orgs:start -->
