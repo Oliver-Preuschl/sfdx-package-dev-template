@@ -26,69 +26,207 @@ const {
 } = require("../libs/configProvider.js");
 
 (async function () {
-  //console.log(process.argv[2]);
   const secrets = JSON.parse(process.argv[2]);
   const pipelineName = process.argv[3];
   const packageConfig = getPackageConfig();
   const installationPipelinesConfig = getInstallationPipelinesConfig();
   const packageVersions = getPackageVersions();
-  const latestPackageVersion = packageVersions[getPackageVersions.length];
+  const latestPackageVersion = packageVersions[packageVersions.length - 1];
+  const latestReleastPackageVersion = [...packageVersions]
+    .reverse()
+    .find((packageVersion) => packageVersion.IsReleased);
   const packageVersionInstallations = getPackageVersionInstallations();
-  //console.log(installationPipelinesConfig);
 
+  const pipelineToExecute = getPipeline(
+    pipelineName,
+    installationPipelinesConfig
+  );
+
+  for (let org of pipelineToExecute.orgs) {
+    console.log(`##### Org - ${org.name}`);
+    const packageVersionToInstall =
+      org.versionToInstall === "LATEST"
+        ? latestPackageVersion
+        : latestReleastPackageVersion;
+    if (!packageVersionToInstall) {
+      console.error(
+        `# Error - No ${
+          org.versionToInstall === "LATESTRELEASED" ? "released" : ""
+        }Version could be found - Skipping Installation`
+      );
+      documentInstallation(
+        packageVersionInstallations,
+        packageVersionToInstall,
+        org,
+        false
+      );
+      console.log(`#####`);
+      continue;
+    }
+    console.log(
+      `# Package Version - ${packageVersionToInstall.Version} (${packageVersionToInstall.SubscriberPackageVersionId})`
+    );
+    const authUrl = getAuthUrl(secrets, org);
+    if (!authUrl) {
+      documentInstallation(
+        packageVersionInstallations,
+        packageVersionToInstall,
+        org,
+        false
+      );
+      console.log(`#####`);
+      continue;
+    }
+    let hasErrorOccured = saveAuthUrl(authUrl);
+    if (hasErrorOccured) {
+      documentInstallation(
+        packageVersionInstallations,
+        packageVersionToInstall,
+        org,
+        false
+      );
+      console.log(`#####`);
+      continue;
+    }
+    hasErrorOccured = await connectToOrg();
+    if (hasErrorOccured) {
+      documentInstallation(
+        packageVersionInstallations,
+        packageVersionToInstall,
+        org,
+        false
+      );
+      console.log(`#####`);
+      continue;
+    }
+    hasErrorOccured = await installPackageVersion(
+      packageConfig,
+      packageVersionToInstall,
+      org
+    );
+    if (hasErrorOccured) {
+      documentInstallation(
+        packageVersionInstallations,
+        packageVersionToInstall,
+        org,
+        false
+      );
+      console.log(`#####`);
+      continue;
+    }
+    documentInstallation(
+      packageVersionInstallations,
+      packageVersionToInstall,
+      org,
+      true
+    );
+    console.log(`#####`);
+  }
+  saveInstallationsFile(packageVersionInstallations);
+  console.log(`##########\n`);
+})();
+
+function getPipeline(pipelineName, installationPipelinesConfig) {
   console.log(`########## Pipeline ${pipelineName}`);
   const pipelineToExecute = installationPipelinesConfig.pipelines.find(
     (pipeline) => pipeline.name === pipelineName
   );
-  if (pipelineToExecute) {
-    const today = new Date().toISOString().slice(0, 10);
-    for (let org of pipelineToExecute.orgs) {
-      console.log(`##### Org - ${org.name}`);
-      const authUrl = secrets[org.sfdxAuthUrlSecret];
-      console.log(`# AuthUrl ${authUrl ? "found" : "not found"}`);
-      fs.writeFile("./TARGET_ORG_AUTH_URL.txt", authUrl, (error) => {
-        if (error) {
-          console.error(`# ${error}`);
-        }
-      });
-      const orgConnectCommand = `sfdx auth:sfdxurl:store -f ./TARGET_ORG_AUTH_URL.txt --setalias targetorg --setdefaultusername --json`;
-      console.log(`# Connecting to Target Org - ${orgConnectCommand}`);
-      const orgConnectResponse = await execCommand(orgConnectCommand);
-      console.log(`# ${JSON.stringify(orgConnectResponse)}`);
-      const installationKey = packageConfig.password;
-      const packageInstallCommand = `sfdx force:package:install --package ${latestPackageVersion.SubscriberPackageVersionId} --installationkey ${installationKey} --securitytype ${org.securityType} --upgradetype ${org.upgradeType} --apexcompile ${org.apexCompile} --noprompt --wait 10 --json`;
-      console.log(`# ${packageInstallCommand}`);
-      const packageInstallResponse = await execCommand(packageInstallCommand);
-      console.log(`# ${JSON.stringify(packageInstallResponse)}`);
-      const packageVersionInstallation = {
-        success: true,
-        date: today,
-        subscriberPackageVersionId:
-          latestPackageVersion.SubscriberPackageVersionId,
-        packageVersionName: latestPackageVersion.Name,
-        pakageVersion: latestPackageVersion.Version
-      };
-      packageVersionInstallations.orgs = packageVersionInstallations.orgs || {};
-      packageVersionInstallations.orgs[org.name] = packageVersionInstallations
-        .orgs[org.name] || { installations: [] };
-      packageVersionInstallations.orgs[org.name].installations.push(
-        packageVersionInstallation
-      );
-      fs.writeFile(
-        "./sfdx-package-version-installations.json",
-        JSON.stringify(packageVersionInstallations, null, 4),
-        (error) => {
-          if (error) {
-            console.error(error);
-          }
-        }
-      );
-      console.log(`#####`);
-    }
-  } else {
-    console.error(
+  if (!pipelineToExecute) {
+    throw new Error(
       `# Error - Pipeline "${pipelineName}" could not be found in sfdx-installation-pipelines.json`
     );
   }
-  console.log(`##########\n`);
-})();
+  return pipelineToExecute;
+}
+
+function getAuthUrl(secrets, org) {
+  const authUrl = secrets[org.sfdxAuthUrlSecret];
+  console.log(
+    `# AuthUrl ${authUrl ? "found" : "not found - Skipping Installation"}`
+  );
+  return authUrl;
+}
+
+function saveAuthUrl(authUrl) {
+  let hasErrorOccured = false;
+  fs.writeFile("./TARGET_ORG_AUTH_URL.txt", authUrl, (error) => {
+    if (error) {
+      console.error(
+        `# Error - AuthUrl could not be saved - ${error} - Skipping Installation`
+      );
+      hasErrorOccured = true;
+    }
+  });
+  return hasErrorOccured;
+}
+
+async function connectToOrg() {
+  const orgConnectCommand = `sfdx auth:sfdxurl:store -f ./TARGET_ORG_AUTH_URL.txt --setalias targetorg --setdefaultusername --json`;
+  console.log(`# Connecting to Target Org - ${orgConnectCommand}`);
+  try {
+    const orgConnectResponse = await execCommand(orgConnectCommand);
+    console.log(`# ${JSON.stringify(orgConnectResponse)}`);
+  } catch (e) {
+    console.error(
+      `# Error - Could not connect to Org - ${e.message} - Skipping Installation`
+    );
+    //console.error("Details:", JSON.stringify(e));
+    return true;
+  }
+}
+
+async function installPackageVersion(
+  packageConfig,
+  packageVersionToInstall,
+  org
+) {
+  const installationKey = packageConfig.password;
+  const packageInstallCommand = `sfdx force:package:install --package ${packageVersionToInstall.SubscriberPackageVersionId} --installationkey ${installationKey} --securitytype ${org.securityType} --upgradetype ${org.upgradeType} --apexcompile ${org.apexCompile} --noprompt --wait 10 --json`;
+  console.log(`# ${packageInstallCommand}`);
+  try {
+    const packageInstallResponse = await execCommand(packageInstallCommand);
+    console.log(`# ${JSON.stringify(packageInstallResponse)}`);
+  } catch (e) {
+    console.error(`# Error - Could not install Package - ${e.message}`);
+    //console.error("Details:", JSON.stringify(e));
+    return true;
+  }
+}
+
+function documentInstallation(
+  packageVersionInstallations,
+  installedPackageVersion,
+  org,
+  success = true
+) {
+  const today = new Date().toISOString().slice(0, 10);
+  const packageVersionInstallation = {
+    success,
+    date: today,
+    subscriberPackageVersionId:
+      installedPackageVersion?.SubscriberPackageVersionId,
+    packageVersionName: installedPackageVersion?.Name,
+    pakageVersion: installedPackageVersion?.Version
+  };
+  packageVersionInstallations.orgs = packageVersionInstallations.orgs || {};
+  packageVersionInstallations.orgs[org.name] = packageVersionInstallations.orgs[
+    org.name
+  ] || { installations: [] };
+  packageVersionInstallations.orgs[org.name].installations.push(
+    packageVersionInstallation
+  );
+}
+
+function saveInstallationsFile(packageVersionInstallations) {
+  fs.writeFile(
+    "./sfdx-package-version-installations.json",
+    JSON.stringify(packageVersionInstallations, null, 4),
+    (error) => {
+      if (error) {
+        console.error(
+          `# Error - Installation could not be documented - ${error}`
+        );
+      }
+    }
+  );
+}

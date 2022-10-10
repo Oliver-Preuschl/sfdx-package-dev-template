@@ -25,8 +25,6 @@ const {
 } = require("../libs/configProvider.js");
 const parseString = require("xml2js").parseString;
 
-const _MS_PER_DAY = 1000 * 60 * 60 * 24;
-
 (async function () {
   const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
@@ -236,9 +234,9 @@ Id Id PK`;
 
 function getInstallationStatusMermaidMarkup() {
   let mermaidMarkup = `gantt
-  
       title Version History
       dateFormat  YYYY-MM-DD
+      todayMarker stroke-width:5px,stroke:#0f0,opacity:0.5
   `;
   const packageVersionInstallations = getPackageVersionInstallations();
   for (let orgName in packageVersionInstallations.orgs) {
@@ -246,40 +244,17 @@ function getInstallationStatusMermaidMarkup() {
     mermaidMarkup += `\nsection ${orgName}`;
     let firstInstallation = true;
     org.installations.forEach((installation, installationIndex) => {
-      let endDate;
-      if (installationIndex + 1 < org.installations.length) {
-        console.log(`Getting installation "${installationIndex + 1}"`);
-        endDate = new Date(org.installations[installationIndex + 1].date);
+      if (installationIndex < org.installations.length - 1) {
+        mermaidMarkup += `\n${installation.pakageVersion}: milestone, done,${
+          !installation.success ? " crit," : ""
+        } ${installation.date},0d`;
       } else {
-        endDate = new Date();
-      }
-      console.log("StartDate", new Date(installation.date));
-      console.log("EndDate", endDate);
-      if (firstInstallation) {
-        mermaidMarkup += `\n${installation.pakageVersion}: ${
-          installation.date
-        },${dateDiffInDays(new Date(installation.date), endDate)}d`;
-        console.log(
-          `Adding: ${installation.pakageVersion}: ${
-            installation.date
-          },${dateDiffInDays(new Date(installation.date), endDate)}d`
-        );
-      } else {
-        mermaidMarkup += `\n${installation.pakageVersion}: ${dateDiffInDays(
-          new Date(installation.date),
-          endDate
-        )}d`;
+        mermaidMarkup += `\n${installation.pakageVersion}: milestone, active,${
+          !installation.success ? " crit," : ""
+        } ${installation.date},0d`;
       }
       firstInstallation = false;
     });
   }
   return mermaidMarkup;
-}
-
-function dateDiffInDays(a, b) {
-  // Discard the time and time-zone information.
-  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-  return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }

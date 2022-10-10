@@ -26,6 +26,7 @@ on:
         options:
           - INT - PRE
           - PROD
+          - ERROR
     #  versionTypeToInstall:
     #    type: choice
     #    description: Version to install

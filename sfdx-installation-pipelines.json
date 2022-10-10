@@ -1,6 +1,6 @@
 {
   "availableValues": {
-    "versionTypeToInstall": ["Latest", "LatestReleased"],
+    "versionToInstall": ["LATEST", "LATESTRELEASED"],
     "securityType": ["AllUsers", "AdminsOnly"],
     "upgradeType": ["DeprecateOnly", "Mixed", "Delete"],
     "apexCompile": ["all", "package"]
@@ -12,7 +12,7 @@
         {
           "name": "INT",
           "sfdxAuthUrlSecret": "AUTH_URL_INT",
-          "versionTypeToInstall": "Latest",
+          "versionToInstall": "LATEST",
           "securityType": "AdminsOnly",
           "upgradeType": "Mixed",
           "apexCompile": "all"
@@ -20,7 +20,7 @@
         {
           "name": "PRE",
           "sfdxAuthUrlSecret": "AUTH_URL_PRE",
-          "versionTypeToInstall": "Latest",
+          "versionToInstall": "LATEST",
           "securityType": "AdminsOnly",
           "upgradeType": "Mixed",
           "apexCompile": "all"
@@ -33,7 +33,28 @@
         {
           "name": "PROD",
           "sfdxAuthUrlSecret": "AuthUrl_Prod",
-          "versionTypeToInstall": "LatestReleased",
+          "versionToInstall": "LATESTRELEASED",
+          "securityType": "AllUsers",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        }
+      ]
+    },
+    {
+      "name": "ERROR",
+      "orgs": [
+        {
+          "name": "ERROR",
+          "sfdxAuthUrlSecret": "AUTH_URL_ERROR_1",
+          "versionToInstall": "LATESTRELEASED",
+          "securityType": "AllUsers",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        },
+        {
+          "name": "ERROR2",
+          "sfdxAuthUrlSecret": "AUTH_URL_ERROR_2",
+          "versionToInstall": "LATESTRELEASED",
           "securityType": "AllUsers",
           "upgradeType": "Mixed",
           "apexCompile": "all"
