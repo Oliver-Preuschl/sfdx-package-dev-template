@@ -28,6 +28,11 @@ jobs:
   create-package-version:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        id: extract_branch_name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
@@ -80,7 +85,7 @@ jobs:
       - name: "Build README"
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
 
       - name: "Commit Changes"
         run: |

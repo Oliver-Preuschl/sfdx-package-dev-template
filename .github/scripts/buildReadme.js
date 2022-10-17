@@ -27,6 +27,7 @@ const {
 const parseString = require("xml2js").parseString;
 
 (async function () {
+  const branchName = process.argv[2];
   const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
@@ -69,17 +70,6 @@ ${badges.join("\n")}
 <!-- badges:end -->`
     )
     .replace(
-      /<!-- scratch-orgs:start -->[\s\S]*<!-- scratch-orgs:end -->/g,
-      `<!-- scratch-orgs:start -->
-<details>
-<summary>${scratchOrgs.length} Scratch Org(s)</summary>
-
-${expandableScratchOrgsString}
-
-</details>
-<!-- scratch-orgs:end -->`
-    )
-    .replace(
       /<!-- package-versions:start -->[\s\S]*<!-- package-versions:end -->/g,
       `<!-- package-versions:start -->
 <details>
@@ -98,6 +88,26 @@ ${objectMermaidMarkup}
 \`\`\`
 <!-- objects-erd:end -->`
     );
+
+  if (branchName === "master") {
+    readme = readme.replace(
+      /<!-- scratch-orgs:start -->[\s\S]*<!-- scratch-orgs:end -->/g,
+      `<!-- scratch-orgs:start -->
+<!-- scratch-orgs:end -->`
+    );
+  } else {
+    readme = readme.replace(
+      /<!-- scratch-orgs:start -->[\s\S]*<!-- scratch-orgs:end -->/g,
+      `<!-- scratch-orgs:start -->
+<details>
+<summary>${scratchOrgs.length} Scratch Org(s)</summary>
+
+${expandableScratchOrgsString}
+
+</details>
+<!-- scratch-orgs:end -->`
+    );
+  }
 
   fs.writeFile("./README.md", readme, (error) => {
     if (error) {

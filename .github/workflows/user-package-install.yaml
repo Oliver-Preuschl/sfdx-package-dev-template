@@ -64,7 +64,7 @@ jobs:
       - name: "Build README"
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
 
       - name: "Commit Changes"
         run: |

@@ -106,7 +106,7 @@ jobs:
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js
+          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
 
       - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
