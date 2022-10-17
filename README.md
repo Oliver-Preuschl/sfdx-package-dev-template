@@ -216,13 +216,25 @@ A detailed documentation of the complete export.json format can be found [here](
 
 ## Package Installation
 
-The latest or the latest promoted version of the package can be directly installed in several target orgs, which have to be specified in sfdx-installation-pipelines.json.
-| Attribute | Values | Description |
-| :--------------: | :----: | ---------------------- |
-| versionToInstall | LATEST, LATESTRELEASED | Specifies the package version to install. |
-| securityType | AllUsers, AdminsOnly | Security access type for the installed package. |
-| upgradeType | DeprecateOnly, Mixed, Delete | or package upgrades, specifies whether to mark all removed components as deprecated (DeprecateOnly), to delete removed components that can be safely deleted and deprecate the others (Mixed), or to delete all removed components, except for custom objects and custom fields, that don't have dependencies (Delete). |
-| apexCompile | all, package | Applies to unlocked packages only. Specifies whether to compile all Apex in the org and package, or only the Apex in the package. |
+Package versions can be directly installed into several target orgs by executing the workflow "user:package:install [master]" for a single pipeline. Each pipeline combines several orgs which have to be specified in sfdx-installation-pipelines.json.
+
+### Pipeline Attributes
+
+| Attribute | Description                                                                                                                                               |
+| :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   name    | The name of the pipeline can be freely chosen. This is the name, which has to be entered when the "user:package:install [master]" workflow gets executed. |
+|   orgs    | An array of all target orgs for this pipeline.                                                                                                            |
+
+### Org Attributes
+
+|     Attribute     |            Values            | Description                                                                                                                                                                                                                                                                                                             |
+| :---------------: | :--------------------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|       name        |                              | The name of the org can be freely chosen.                                                                                                                                                                                                                                                                               |
+| sfdxAuthUrlSecret |                              | Specifies the name of a secret, which holds the Sfdx Auth Url, which can be obtained via SFDX (sfdx force:org:display --targetusername=<username> --verbose)                                                                                                                                                            |
+| versionToInstall  |    LATEST, LATESTRELEASED    | Specifies the package version to install.                                                                                                                                                                                                                                                                               |
+|   securityType    |     AllUsers, AdminsOnly     | Security access type for the installed package.                                                                                                                                                                                                                                                                         |
+|    upgradeType    | DeprecateOnly, Mixed, Delete | or package upgrades, specifies whether to mark all removed components as deprecated (DeprecateOnly), to delete removed components that can be safely deleted and deprecate the others (Mixed), or to delete all removed components, except for custom objects and custom fields, that don't have dependencies (Delete). |
+|    apexCompile    |         all, package         | Applies to unlocked packages only. Specifies whether to compile all Apex in the org and package, or only the Apex in the package.                                                                                                                                                                                       |
 
 sfdx-installation-pipelines.json example:
 
