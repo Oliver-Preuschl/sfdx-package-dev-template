@@ -21,7 +21,8 @@ const {
   getPackageConfig,
   getScratchOrgs,
   getPackageVersions,
-  getPackageVersionInstallations
+  getPackageVersionInstallations,
+  getInstallationPipelinesConfig
 } = require("../libs/configProvider.js");
 const parseString = require("xml2js").parseString;
 
@@ -29,15 +30,38 @@ const parseString = require("xml2js").parseString;
   const packageConfig = getPackageConfig();
   const scratchOrgs = getScratchOrgs();
   const packageVersions = getPackageVersions();
+  const pipelinesConfig = getInstallationPipelinesConfig();
   let badges = getBadges(packageConfig, packageVersions);
   let expandableScratchOrgsString = getExpandableScratchOrgsString(scratchOrgs);
   let expandablePackageVersionsString =
     getExpandablePackageVersionsString(packageVersions);
   let objectMermaidMarkup = getObjectMermaidMarkup();
   let installationStatusMermaidMarkup = getInstallationStatusMermaidMarkup();
+  let expandablePipelinesString = getExpandablePipelinesString(
+    pipelinesConfig.pipelines
+  );
 
   let readme = fs.readFileSync("./README.md", "utf8");
   readme = readme
+    .replace(
+      /<!-- pipelines:start -->[\s\S]*<!-- pipelines:end -->/g,
+      `<!-- pipelines:start -->
+<details>
+<summary>${pipelinesConfig.pipelines.length} Pipeline(s)</summary>
+
+${expandablePipelinesString}
+
+</details>
+<!-- pipelines:end -->`
+    )
+    .replace(
+      /<!-- installation-history:start -->[\s\S]*<!-- installation-history:end -->/g,
+      `<!-- installation-history:start -->
+\`\`\`mermaid
+${installationStatusMermaidMarkup}
+\`\`\`
+<!-- installation-history:end -->`
+    )
     .replace(
       /<!-- badges:start -->[\s\S]*<!-- badges:end -->/g,
       `<!-- badges:start -->
@@ -73,14 +97,6 @@ ${expandablePackageVersionsString}
 ${objectMermaidMarkup}
 \`\`\`
 <!-- objects-erd:end -->`
-    )
-    .replace(
-      /<!-- installation-history:start -->[\s\S]*<!-- installation-history:end -->/g,
-      `<!-- installation-history:start -->
-\`\`\`mermaid
-${installationStatusMermaidMarkup}
-\`\`\`
-<!-- installation-history:end -->`
     );
 
   fs.writeFile("./README.md", readme, (error) => {
@@ -132,6 +148,50 @@ function getBadges(packageConfig, packageVersions) {
   return badges;
 }
 
+function getExpandablePipelinesString(pipelines) {
+  return pipelines
+    .map(
+      (pipeline) => `
+<details style="margin-left: 1rem; margin-bottom: 0;">
+<summary>${pipeline.name}</summary>
+
+\`\`\`json
+${JSON.stringify(pipeline, null, 2)}
+\`\`\`
+
+</details>
+`
+    )
+    .join("\n");
+}
+
+function getInstallationStatusMermaidMarkup() {
+  let mermaidMarkup = `gantt
+      title Version History
+      dateFormat  YYYY-MM-DD
+      todayMarker stroke-width:5px,stroke:#0f0,opacity:0.5
+  `;
+  const packageVersionInstallations = getPackageVersionInstallations();
+  for (let orgName in packageVersionInstallations.orgs) {
+    const org = packageVersionInstallations.orgs[orgName];
+    mermaidMarkup += `\nsection ${orgName}`;
+    let firstInstallation = true;
+    org.installations.forEach((installation, installationIndex) => {
+      if (installationIndex < org.installations.length - 1) {
+        mermaidMarkup += `\n${installation.pakageVersion}: milestone, done,${
+          !installation.success ? " crit," : ""
+        } ${installation.date},0d`;
+      } else {
+        mermaidMarkup += `\n${installation.pakageVersion}: milestone, active,${
+          !installation.success ? " crit," : ""
+        } ${installation.date},0d`;
+      }
+      firstInstallation = false;
+    });
+  }
+  return mermaidMarkup;
+}
+
 function getExpandableScratchOrgsString(scratchOrgs) {
   return scratchOrgs
     .reverse()
@@ -152,6 +212,13 @@ ${JSON.stringify(scratchOrg, null, 2)}
     .join("\n");
 }
 
+function getFormattedDate(dateString) {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${
+    date.getMonth() + 1
+  }-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
 function getExpandablePackageVersionsString(packageVersions) {
   return packageVersions
     .reverse()
@@ -168,13 +235,6 @@ ${JSON.stringify(packageVersion, null, 2)}
 `
     )
     .join("\n");
-}
-
-function getFormattedDate(dateString) {
-  const date = new Date(dateString);
-  return `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
 
 function getObjectMermaidMarkup() {
@@ -229,32 +289,5 @@ Id Id PK`;
     mermaidMarkup += `\n${sObjectDefinition}
 }`;
   });
-  return mermaidMarkup;
-}
-
-function getInstallationStatusMermaidMarkup() {
-  let mermaidMarkup = `gantt
-      title Version History
-      dateFormat  YYYY-MM-DD
-      todayMarker stroke-width:5px,stroke:#0f0,opacity:0.5
-  `;
-  const packageVersionInstallations = getPackageVersionInstallations();
-  for (let orgName in packageVersionInstallations.orgs) {
-    const org = packageVersionInstallations.orgs[orgName];
-    mermaidMarkup += `\nsection ${orgName}`;
-    let firstInstallation = true;
-    org.installations.forEach((installation, installationIndex) => {
-      if (installationIndex < org.installations.length - 1) {
-        mermaidMarkup += `\n${installation.pakageVersion}: milestone, done,${
-          !installation.success ? " crit," : ""
-        } ${installation.date},0d`;
-      } else {
-        mermaidMarkup += `\n${installation.pakageVersion}: milestone, active,${
-          !installation.success ? " crit," : ""
-        } ${installation.date},0d`;
-      }
-      firstInstallation = false;
-    });
-  }
   return mermaidMarkup;
 }

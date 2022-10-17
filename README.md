@@ -6,6 +6,11 @@
 <!-- installation-history:start -->
 <!-- installation-history:end -->
 
+## Pipelines
+
+<!-- pipelines:start -->
+<!-- pipelines:end -->
+
 ## Scratch Orgs
 
 <!-- scratch-orgs:start -->

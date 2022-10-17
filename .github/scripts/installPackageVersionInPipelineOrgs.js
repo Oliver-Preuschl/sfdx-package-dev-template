@@ -36,6 +36,7 @@ const {
     .reverse()
     .find((packageVersion) => packageVersion.IsReleased);
   const packageVersionInstallations = getPackageVersionInstallations();
+  console.log("packageVersionInstallations", packageVersionInstallations);
 
   const pipelineToExecute = getPipeline(
     pipelineName,
@@ -49,17 +50,17 @@ const {
         ? latestPackageVersion
         : latestReleastPackageVersion;
     if (!packageVersionToInstall) {
-      console.error(
-        `# Error - No ${
-          org.versionToInstall === "LATESTRELEASED" ? "released" : ""
-        }Version could be found - Skipping Installation`
-      );
-      documentInstallation(
+      const errorMessage = `No ${
+        org.versionToInstall === "LATESTRELEASED" ? "released" : ""
+      }Version could be found - Skipping Installation`;
+      console.error(`# Error - ${errorMessage}`);
+      documentInstallation({
         packageVersionInstallations,
-        packageVersionToInstall,
+        installedPackageVersion: packageVersionToInstall,
         org,
-        false
-      );
+        isSuccess: false,
+        errorMessage
+      });
       console.log(`#####`);
       continue;
     }
@@ -68,58 +69,64 @@ const {
     );
     const authUrl = getAuthUrl(secrets, org);
     if (!authUrl) {
-      documentInstallation(
+      const errorMessage = `No Auth URL could be found`;
+      console.error(`# Error - ${errorMessage}`);
+      documentInstallation({
         packageVersionInstallations,
-        packageVersionToInstall,
+        installedPackageVersion: packageVersionToInstall,
         org,
-        false
-      );
+        isSuccess: false,
+        errorMessage
+      });
       console.log(`#####`);
       continue;
     }
-    let hasErrorOccured = saveAuthUrl(authUrl);
-    if (hasErrorOccured) {
-      documentInstallation(
+    let result = saveAuthUrl(authUrl);
+    if (!result.isSuccess) {
+      documentInstallation({
         packageVersionInstallations,
-        packageVersionToInstall,
+        installedPackageVersion: packageVersionToInstall,
         org,
-        false
-      );
+        isSuccess: false,
+        errorMessage: result.errorMessage
+      });
       console.log(`#####`);
       continue;
     }
-    hasErrorOccured = await connectToOrg();
-    if (hasErrorOccured) {
-      documentInstallation(
+    result = await connectToOrg();
+    if (!result.isSuccess) {
+      documentInstallation({
         packageVersionInstallations,
-        packageVersionToInstall,
+        installedPackageVersion: packageVersionToInstall,
         org,
-        false
-      );
+        isSuccess: false,
+        errorMessage: result.errorMessage
+      });
       console.log(`#####`);
       continue;
     }
-    hasErrorOccured = await installPackageVersion(
+    result = await installPackageVersion(
       packageConfig,
       packageVersionToInstall,
       org
     );
-    if (hasErrorOccured) {
-      documentInstallation(
+    if (!result.isSuccess) {
+      documentInstallation({
         packageVersionInstallations,
-        packageVersionToInstall,
+        installedPackageVersion: packageVersionToInstall,
         org,
-        false
-      );
+        isSuccess: false,
+        errorMessage: result.errorMessage
+      });
       console.log(`#####`);
       continue;
     }
-    documentInstallation(
+    documentInstallation({
       packageVersionInstallations,
-      packageVersionToInstall,
+      installedPackageVersion: packageVersionToInstall,
       org,
-      true
-    );
+      isSuccess: true
+    });
     console.log(`#####`);
   }
   saveInstallationsFile(packageVersionInstallations);
@@ -127,7 +134,7 @@ const {
 })();
 
 function getPipeline(pipelineName, installationPipelinesConfig) {
-  console.log(`########## Pipeline ${pipelineName}`);
+  console.log(`########## Pipeline - ${pipelineName}`);
   const pipelineToExecute = installationPipelinesConfig.pipelines.find(
     (pipeline) => pipeline.name === pipelineName
   );
@@ -148,31 +155,31 @@ function getAuthUrl(secrets, org) {
 }
 
 function saveAuthUrl(authUrl) {
-  let hasErrorOccured = false;
+  let result = { isSuccess: true };
   fs.writeFile("./TARGET_ORG_AUTH_URL.txt", authUrl, (error) => {
     if (error) {
-      console.error(
-        `# Error - AuthUrl could not be saved - ${error} - Skipping Installation`
-      );
-      hasErrorOccured = true;
+      result.isSuccess = false;
+      result.errorMessage = `AuthUrl could not be saved - ${error} - Skipping Installation`;
+      console.error(`# Error - ${result.errorMessage}`);
     }
   });
-  return hasErrorOccured;
+  return result;
 }
 
 async function connectToOrg() {
+  let result = { isSuccess: true };
   const orgConnectCommand = `sfdx auth:sfdxurl:store -f ./TARGET_ORG_AUTH_URL.txt --setalias targetorg --setdefaultusername --json`;
   console.log(`# Connecting to Target Org - ${orgConnectCommand}`);
   try {
     const orgConnectResponse = await execCommand(orgConnectCommand);
     console.log(`# ${JSON.stringify(orgConnectResponse)}`);
   } catch (e) {
-    console.error(
-      `# Error - Could not connect to Org - ${e.message} - Skipping Installation`
-    );
+    result.isSuccess = false;
+    result.errorMessage = `Could not connect to Org - ${e.message} - Skipping Installation`;
+    console.error(`# Error - ${result.errorMessage}`);
     //console.error("Details:", JSON.stringify(e));
-    return true;
   }
+  return result;
 }
 
 async function installPackageVersion(
@@ -180,6 +187,7 @@ async function installPackageVersion(
   packageVersionToInstall,
   org
 ) {
+  let result = { isSuccess: true };
   const installationKey = packageConfig.password;
   const packageInstallCommand = `sfdx force:package:install --package ${packageVersionToInstall.SubscriberPackageVersionId} --installationkey ${installationKey} --securitytype ${org.securityType} --upgradetype ${org.upgradeType} --apexcompile ${org.apexCompile} --noprompt --wait 10 --json`;
   console.log(`# ${packageInstallCommand}`);
@@ -187,26 +195,30 @@ async function installPackageVersion(
     const packageInstallResponse = await execCommand(packageInstallCommand);
     console.log(`# ${JSON.stringify(packageInstallResponse)}`);
   } catch (e) {
-    console.error(`# Error - Could not install Package - ${e.message}`);
+    result.isSuccess = false;
+    result.errorMessage = `Could not install Package - ${e.message}`;
+    console.error(`# Error - ${result.errorMessage}`);
     //console.error("Details:", JSON.stringify(e));
-    return true;
   }
+  return result;
 }
 
-function documentInstallation(
+function documentInstallation({
   packageVersionInstallations,
   installedPackageVersion,
   org,
-  success = true
-) {
+  isSuccess = true,
+  errorMessage
+}) {
   const today = new Date().toISOString().slice(0, 10);
   const packageVersionInstallation = {
-    success,
+    isSuccess,
     date: today,
     subscriberPackageVersionId:
       installedPackageVersion?.SubscriberPackageVersionId,
     packageVersionName: installedPackageVersion?.Name,
-    pakageVersion: installedPackageVersion?.Version
+    pakageVersion: installedPackageVersion?.Version,
+    errorMessage
   };
   packageVersionInstallations.orgs = packageVersionInstallations.orgs || {};
   packageVersionInstallations.orgs[org.name] = packageVersionInstallations.orgs[
