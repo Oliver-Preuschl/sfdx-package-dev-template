@@ -1,6 +1,16 @@
 <!-- badges:start -->
 <!-- badges:end -->
 
+## Installation History
+
+<!-- installation-history:start -->
+<!-- installation-history:end -->
+
+## Pipelines
+
+<!-- pipelines:start -->
+<!-- pipelines:end -->
+
 ## Scratch Orgs
 
 <!-- scratch-orgs:start -->
@@ -18,7 +28,7 @@
 
 ## About
 
-This repository supports the development of sfdx second-generation packages by leveraging the power of Github workflows (automated tasks & self service tasks). It supports unlocked packages (optional org dependent) as well as managed packages.
+This repository supports the development and installation of sfdx second-generation packages by leveraging the power of Github workflows (automated tasks & self service tasks). It supports unlocked packages (optional org dependent) as well as managed packages.
 
 ## Getting started
 
@@ -43,6 +53,7 @@ Once the repository is created and the secrets are set up the following function
 | Package version generation                                        |    Automatic     | After a pull request is merged in the master branch a new package version gets automatically generated (workflow: `"system:package:version:create [push:master]"`).                                                                                                                                                                                                                    |
 | Package version promotion                                         |      Manual      | The latest package version can be promoted by manually executing the workflow `"user:package:version:promote [master]"`                                                                                                                                                                                                                                                                |
 | Documentation                                                     |    Automatic     | New scratch orgs, package versions and an SObject ER diagram will be automatically documented in the README                                                                                                                                                                                                                                                                            |
+| Instalation                                                       |      Manual      | Direct installation of the package in different target orgs is supported by manually executing the workflow `"user:package:install [master]"`. The target orgs can be specified in sfdx-installation-pipelines.json                                                                                                                                                                    |
 
 ## Package Configuration
 
@@ -202,6 +213,97 @@ Sample of the export.json:
 ```
 
 A detailed documentation of the complete export.json format can be found [here](https://help.sfdmu.com/full-documentation/configuration-and-running/full-exportjson-format).
+
+## Package Installation
+
+Package versions can be directly installed into several target orgs by executing the workflow "user:package:install [master]" for a single pipeline. Each pipeline combines several orgs which have to be specified in sfdx-installation-pipelines.json.
+
+### Pipeline Attributes
+
+| Attribute | Description                                                                                                                                               |
+| :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   name    | The name of the pipeline can be freely chosen. This is the name, which has to be entered when the "user:package:install [master]" workflow gets executed. |
+|   orgs    | An array of all target orgs for this pipeline.                                                                                                            |
+
+### Org Attributes
+
+|     Attribute     |            Values            | Description                                                                                                                                                                                                                                                                                                             |
+| :---------------: | :--------------------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|       name        |                              | The name of the org can be freely chosen.                                                                                                                                                                                                                                                                               |
+| sfdxAuthUrlSecret |                              | Specifies the name of a secret, which holds the Sfdx Auth Url, which can be obtained via SFDX (sfdx force:org:display --targetusername=<username> --verbose)                                                                                                                                                            |
+| versionToInstall  |    LATEST, LATESTRELEASED    | Specifies the package version to install.                                                                                                                                                                                                                                                                               |
+|   securityType    |     AllUsers, AdminsOnly     | Security access type for the installed package.                                                                                                                                                                                                                                                                         |
+|    upgradeType    | DeprecateOnly, Mixed, Delete | or package upgrades, specifies whether to mark all removed components as deprecated (DeprecateOnly), to delete removed components that can be safely deleted and deprecate the others (Mixed), or to delete all removed components, except for custom objects and custom fields, that don't have dependencies (Delete). |
+|    apexCompile    |         all, package         | Applies to unlocked packages only. Specifies whether to compile all Apex in the org and package, or only the Apex in the package.                                                                                                                                                                                       |
+
+sfdx-installation-pipelines.json example:
+
+```json
+{
+  "pipelines": [
+    {
+      "name": "DEV",
+      "orgs": [
+        {
+          "name": "DEV1",
+          "sfdxAuthUrlSecret": "AUTH_URL_DEV1",
+          "versionToInstall": "LATEST",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        },
+        {
+          "name": "DEV2",
+          "sfdxAuthUrlSecret": "AUTH_URL_DEV2",
+          "versionToInstall": "LATEST",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        }
+      ]
+    },
+    {
+      "name": "QA",
+      "orgs": [
+        {
+          "name": "QA",
+          "sfdxAuthUrlSecret": "AUTH_URL_QA",
+          "versionToInstall": "LATESTRELEASED",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        }
+      ]
+    },
+    {
+      "name": "UAT",
+      "orgs": [
+        {
+          "name": "UAT",
+          "sfdxAuthUrlSecret": "AUTH_URL_UAT",
+          "versionToInstall": "LATESTRELEASED",
+          "securityType": "AdminsOnly",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        }
+      ]
+    },
+    {
+      "name": "PROD",
+      "orgs": [
+        {
+          "name": "PROD",
+          "sfdxAuthUrlSecret": "AUTH_URL_PROD",
+          "versionToInstall": "LATESTRELEASED",
+          "securityType": "AllUsers",
+          "upgradeType": "Mixed",
+          "apexCompile": "all"
+        }
+      ]
+    }
+  ]
+}
+```
 
 ## Workflow
 
