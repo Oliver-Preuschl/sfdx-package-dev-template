@@ -16,15 +16,14 @@
 
 "use strict";
 
-const {
-  getProjectDefaultPackageDirectoryConfig
-} = require("../libs/configProvider.js");
+const { getProjectConfig } = require("../libs/configProvider.js");
 
 (async function () {
   const attributeName = process.argv[2];
-  const projectDefaultPackageDirectoryConfig =
-    getProjectDefaultPackageDirectoryConfig();
-  const attributeValue =
-    projectDefaultPackageDirectoryConfig[attributeName] || "";
+  const projectConfig = getProjectConfig();
+  const defaultPackageDirectory = projectConfig.packageDirectories.find(
+    (packageDirectory) => packageDirectory.default
+  );
+  const attributeValue = defaultPackageDirectory[attributeName] || "";
   console.log(attributeValue);
 })();

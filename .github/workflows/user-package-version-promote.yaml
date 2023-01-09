@@ -18,12 +18,18 @@ name: "user:package:version:promote [master]"
 on:
   workflow_dispatch:
     inputs:
-      versionName:
-        description: "Version Name"
+      promoteLatestVersion:
+        description: "Promote latest version (overwrites version number entered below)"
+        type: boolean
+      versionNumberToPromote:
+        description: "Version number to promote"
+        required: false
+      releaseName:
+        description: "Release name (default: version number)"
         required: false
 
 env:
-  RELEASE_NAME: ${{ github.event.inputs.versionName }}
+  RELEASE_NAME: ${{ github.event.inputs.releaseName }}
 
 jobs:
   build:
@@ -68,18 +74,36 @@ jobs:
           name='$(node ./.github/scripts/getPackageAttribute.js name)'
           echo "::set-output name=package_name::$name"
 
+      - name: "Get Package Version for entered Number"
+        if: ${{ github.event.inputs.promoteLatestVersion == 'false' && github.event.inputs.versionNumberToPromote != '' }}
+        id: get_package_version_for_entered_number
+        run: |
+          versionToPromote=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | awk '$2 == "${{ github.event.inputs.versionNumberToPromote }}"' | awk '{print $3}')
+          echo "VERSION_TO_PROMOTE=$versionToPromote" >> $GITHUB_ENV
+
+      - name: "Get latest Package Version"
+        if: ${{ github.event.inputs.promoteLatestVersion == 'true' }}
+        id: get_latest_package_version
+        run: |
+          versionToPromote=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
+          echo "VERSION_TO_PROMOTE=$versionToPromote" >> $GITHUB_ENV
+
       - name: "Promote Package Version"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
         id: promote_package_version
         run: |
-          latestVersion=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
-          sfdx force:package:version:promote --package $latestVersion --noprompt
-          echo "::set-output name=latest_package_version_id::$latestVersion"
+          sfdx force:package:version:promote --package ${{ env.VERSION_TO_PROMOTE }} --noprompt
+          echo "::set-output name=latest_package_version_id::$versionToPromote"
 
       - name: "Get Release Name from Project Config"
-        if: ${{ github.event.inputs.versionName == '' }}
+        if: ${{ github.event.inputs.releaseName == '' && github.event.inputs.promoteLatestVersion == 'false' }}
         run: |
-          echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" >> $GITHUB_ENV
+          echo "RELEASE_NAME=${{ github.event.inputs.versionNumberToPromote }}" | sed 's/ //g' >> $GITHUB_ENV
+
+      - name: "Get Release Name from Version Number"
+        if: ${{ github.event.inputs.releaseName == '' && github.event.inputs.promoteLatestVersion == 'true' }}
+        run: |
+          echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" | sed 's/ //g' >> $GITHUB_ENV
 
       - name: "Create Release"
         if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}

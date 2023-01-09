@@ -1,0 +1,21 @@
+{
+  "versions": [
+    {
+      "version": "1.2.1",
+      "releaseNotes": [
+        "Updated the package version promotion workflow to be able to promote package versions other than the latest"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "releaseNotes": ["Added installation pipelines"]
+    },
+    {
+      "version": "1.1.0",
+      "releaseNotes": [
+        "Added test data management",
+        "Fixed smaller issue in dependency installation & source pushing"
+      ]
+    }
+  ]
+}
