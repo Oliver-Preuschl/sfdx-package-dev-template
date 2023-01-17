@@ -70,7 +70,7 @@ jobs:
 
       - name: "Create new package version - with password"
         if: ${{ steps.get_package_password.outputs.package_password != '' }}
-        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 60'
+        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --definitionfile config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ steps.get_package_password.outputs.package_password == '' }}
