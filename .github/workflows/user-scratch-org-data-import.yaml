@@ -78,7 +78,7 @@ jobs:
 
       - name: "Import Data into ScratchOrg"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
-        run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt --verbose --filelog
+        run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt --verbose --filelog 1
 
       - name: "Commit Changes"
         if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
