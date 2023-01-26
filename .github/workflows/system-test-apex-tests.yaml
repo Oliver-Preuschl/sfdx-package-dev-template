@@ -52,7 +52,6 @@ jobs:
           tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
           export PATH=./sfdx-cli/bin:$PATH
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
-          sfdx plugins:install texei-sfdx-plugin
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
