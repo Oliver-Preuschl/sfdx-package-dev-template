@@ -32,7 +32,7 @@ jobs:
       - name: Extract repository name
         id: extract_repository_name
         shell: bash
-        run: echo "##[set-output name=repository;]$(echo ${GITHUB_REPOSITORY/\//-})"
+        run: echo "repository=${GITHUB_REPOSITORY/\//-}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
         uses: actions/checkout@v2
@@ -41,11 +41,11 @@ jobs:
         id: get_apex_test_setting
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          runapextests=$(node ./.github/scripts/getPackageAttribute.js runApexTests)
-          echo "::set-output name=run_apex-tests::$runapextests"
+          run_apex_tests=$(node ./.github/scripts/getPackageAttribute.js runApexTests)
+          echo "RUN_APEX_TESTS=$run_apex_tests" >> $GITHUB_ENV
 
       - name: "Install Salesforce CLI"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
@@ -54,44 +54,45 @@ jobs:
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Get ScratchOrg Name"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         id: get_scratch_org_name
         run: |
-          scratchorgname='${{ steps.extract_repository_name.outputs.branch }}_master'
-          echo "::set-output name=scratch_org_name::$scratchorgname"
+          current_date="$(date +'%Y-%m-%d')"
+          scratch_org_name='${{ env.repository }}__test_$current_date'
+          echo "scratch_org_name=$scratch_org_name" >> $GITHUB_ENV
 
       - name: "Create scratch org"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: 'sfdx force:org:create --definitionfile config/project-scratch-def.json --setalias="${{ steps.get_scratch_org_name.outputs.scratch_org_name }}" --setdefaultusername --durationdays 1'
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
+        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="${{ env.scratch_org_name }}" --set-default --duration-days 1'
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         continue-on-error: true
-        run: "sfdx force:source:deploy -p 0-force-org-dependency --ignorewarnings --ignoreerrors"
+        run: "sf project deploy start --source-dir 0-force-org-dependency --ignore-warnings --ignore-errors"
 
       - name: "Install SFDX-Project-Dependencies"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
-          node ./.github/scripts/installPackageDependencies.js "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"
+          node ./.github/scripts/installPackageDependencies.js "${{ env.scratch_org_name }}"
 
       - name: "Push Source to ScratchOrg"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: "sfdx force:source:push --forceoverwrite --ignorewarnings"
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
+        run: "sf project deploy start --ignore-conflicts --ignore-warnings"
 
       - name: "Run Apex tests"
-        if: (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: "sfdx force:apex:test:run -c -r human -d ./tests/apex -w 20"
+        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
+        run: "sf apex run test --code-coverage --result-format human --output-dir ./tests/apex --wait 20"
 
       - name: "Delete scratch org"
-        if: always() && (steps.get_apex_test_setting.outputs.run_apex-tests == 'true') || (steps.get_apex_test_setting.outputs.run_apex-tests == true)
-        run: 'sfdx force:org:delete -p -u "${{ steps.get_scratch_org_name.outputs.scratch_org_name }}"'
+        if: always() && (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
+        run: 'sf org delete scratch --target-org "${{ env.scratch_org_name }} --no-prompt"'

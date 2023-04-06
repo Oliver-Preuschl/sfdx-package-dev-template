@@ -44,17 +44,17 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
     try {
       if (dependency.password) {
         console.log(
-          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --installationkey ${dependency.password} --json --wait 10 --publishwait 10`
+          `sf package install --target-org ${userName} --package ${dependency.versionId} --installation-key ${dependency.password} --json --wait 10 --publish-wait 10`
         );
         installationResponse = await execCommand(
-          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --installationkey ${dependency.password} --json --wait 10 --publishwait 10`
+          `sf package install --target-org ${userName} --package ${dependency.versionId} --installation-key ${dependency.password} --json --wait 10 --publish-wait 10`
         );
       } else {
         console.log(
-          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --json --wait 10 --publishwait 10`
+          `sf package install --target-org ${userName} --package ${dependency.versionId} --json --wait 10 --publish-wait 10`
         );
         installationResponse = await execCommand(
-          `sfdx force:package:install -u ${userName} --package ${dependency.versionId} --json --wait 10 --publishwait 10`
+          `sf package install --target-org ${userName} --package ${dependency.versionId} --json --wait 10 --publish-wait 10`
         );
       }
       console.log(

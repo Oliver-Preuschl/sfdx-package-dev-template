@@ -134,7 +134,7 @@ async function getSortedPackageVersions(subscriberPackageVersions) {
   try {
     const subscriberPackageVersionIdsString =
       getSubscriberPackageVersionIdsString(subscriberPackageVersions);
-    const command = `sfdx force:data:soql:query --targetusername=devhub --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
+    const command = `sf data query --target-org devhub --use-tooling-api --query "SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
     const devHubAvailablePackageVersionsResponse = await execCommand(command);
     let subscriberPackageVersionId2Name = getSubsriberPackageVersionId2NameMap(
       subscriberPackageVersions

@@ -37,10 +37,10 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
           runlwctests=$(node ./.github/scripts/getPackageAttribute.js runLwcTests)
-          echo "::set-output name=run_lwc_tests::$runlwctests"
+          echo "RUN_LWC_TESTS=$runlwctests" >> $GITHUB_ENV
 
       - name: "Restore node_modules cache"
-        if: (steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)
+        if: (env.RUN_LWC_TESTS == 'true') || (env.RUN_LWC_TESTS == true)
         id: cache-npm
         uses: actions/cache@v1
         with:
@@ -51,9 +51,9 @@ jobs:
             npm-
 
       - name: "Install npm dependencies"
-        if: ((steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)) && (steps.cache-npm.outputs.cache-hit != 'true')
+        if: ((env.RUN_LWC_TESTS == 'true') || (env.RUN_LWC_TESTS == true)) && (steps.cache-npm.outputs.cache-hit != 'true')
         run: npm ci
 
       - name: "Run LWC tests"
-        if: (steps.get_lwc_test_setting.outputs.run_lwc_tests == 'true') || (steps.get_lwc_test_setting.outputs.run_lwc_tests == true)
+        if: (env.RUN_LWC_TESTS == 'true') || (env.RUN_LWC_TESTS == true)
         run: npm run test:unit:coverage --passWithNoTests

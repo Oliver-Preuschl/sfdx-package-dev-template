@@ -22,18 +22,6 @@ jobs:
     if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
-      - name: Extract branch name
-        id: extract_branch_name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${github.event.ref#refs/heads/})"
-
-      - name: Debug
-        id: debug_messages
-        shell: bash
-        run: |
-          echo "${{ github.event.ref }}"
-          echo "${{ steps.extract_branch_name.outputs.branch }}"
-
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
@@ -49,29 +37,29 @@ jobs:
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Get Branch Name"
         id: get_branch_name
         run: |
-          branchname='${{ github.event.ref }}'
-          branchname="${branchname//[^0-9a-zA-Z_]/_}"
-          echo "::set-output name=branch_name::$branchname"
+          branch_name='${{ github.event.ref }}'
+          branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
 
       - name: "Get Scratch-Org-Auth-URL"
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
-          authurl=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ steps.get_branch_name.outputs.branch_name }}")
-          echo "::set-output name=auth_url::$authurl"
+          auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
+          echo "auth_url=$auth_url" >> $GITHUB_ENV
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         run: |
-          authurl=${{ steps.get_scratch_org_auth_url.outputs.auth_url }}
-          echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+          auth_url=${{ env.auth_url }}
+          echo $auth_url > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
-        run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+        run: "sf org login sfdx-url --sfdx-url-file ./SCRATCH_ORG_AUTH_URL.txt --alias scratchorg --set-default"
 
       - name: "Delete Scratch Org"
-        run: "sfdx force:org:delete -u scratchorg --noprompt"
+        run: "sf org delete scratch --target-org scratchorg --no-prompt"

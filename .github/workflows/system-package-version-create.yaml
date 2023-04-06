@@ -31,7 +31,7 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
         uses: actions/checkout@v2
@@ -52,29 +52,29 @@ jobs:
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub -d"
 
       - name: "Get Package Name"
         id: get_package_name
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          name='$(node ./.github/scripts/getPackageAttribute.js name)'
-          echo "::set-output name=package_name::$name"
+          package_name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          echo "PACKAGE_NAME=$package_name" >> $GITHUB_ENV
 
       - name: "Get Package Password"
         id: get_package_password
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          password='$(node ./.github/scripts/getPackageAttribute.js password)'
-          echo "::set-output name=package_password::$password"
+          package_password='$(node ./.github/scripts/getPackageAttribute.js password)'
+          echo "PACKAGE_PASSWORD=$package_password" >> $GITHUB_ENV
 
       - name: "Create new package version - with password"
-        if: ${{ steps.get_package_password.outputs.package_password != '' }}
-        run: 'sfdx force:package:version:create --package "${{ steps.get_package_name.outputs.package_name }}" --installationkey "${{ steps.get_package_password.outputs.package_password }}" --codecoverage --definitionfile config/project-scratch-def.json --wait 60'
+        if: ${{ env.PACKAGE_PASSWORD != '' }}
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
-        if: ${{ steps.get_package_password.outputs.package_password == '' }}
-        run: 'sfdx force:package:version:create --package "${{ steps.get_package_password.outputs.package_name }}" --codecoverage --installationkeybypass --definitionfile config/project-scratch-def.json --wait 60'
+        if: ${{ env.PACKAGE_PASSWORD == '' }}
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
@@ -85,7 +85,7 @@ jobs:
       - name: "Build README"
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
+          node ./.github/scripts/buildReadme.js "${{ env.BRANCH }}"
 
       - name: "Commit Changes"
         run: |

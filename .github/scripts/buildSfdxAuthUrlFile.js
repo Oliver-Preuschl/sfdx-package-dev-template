@@ -32,7 +32,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
 
 async function getScratchOrgDetails(branchName, scratchOrgName) {
   const scratchOrgDetails = await execCommand(
-    `sfdx force:org:display --targetusername="${scratchOrgName}" --verbose --json`
+    `sf org display --target-org="${scratchOrgName}" --verbose --json`
   );
   const scratchOrgData = {
     branchName: branchName,

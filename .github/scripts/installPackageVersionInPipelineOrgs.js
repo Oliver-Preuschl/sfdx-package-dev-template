@@ -168,7 +168,7 @@ function saveAuthUrl(authUrl) {
 
 async function connectToOrg() {
   let result = { isSuccess: true };
-  const orgConnectCommand = `sfdx auth:sfdxurl:store -f ./TARGET_ORG_AUTH_URL.txt --setalias targetorg --setdefaultusername --json`;
+  const orgConnectCommand = `sf org login sfdx-url --sfdx-url-file ./TARGET_ORG_AUTH_URL.txt --alias targetorg --set-default --json`;
   console.log(`# Connecting to Target Org - ${orgConnectCommand}`);
   try {
     const orgConnectResponse = await execCommand(orgConnectCommand);
@@ -189,7 +189,7 @@ async function installPackageVersion(
 ) {
   let result = { isSuccess: true };
   const installationKey = packageConfig.password;
-  const packageInstallCommand = `sfdx force:package:install --package ${packageVersionToInstall.SubscriberPackageVersionId} --installationkey ${installationKey} --securitytype ${org.securityType} --upgradetype ${org.upgradeType} --apexcompile ${org.apexCompile} --noprompt --wait 10 --json`;
+  const packageInstallCommand = `sf package install --package ${packageVersionToInstall.SubscriberPackageVersionId} --installation-key ${installationKey} --security-type ${org.securityType} --upgrade-type ${org.upgradeType} --apex-compile ${org.apexCompile} --no-prompt --wait 10 --json`;
   console.log(`# ${packageInstallCommand}`);
   try {
     const packageInstallResponse = await execCommand(packageInstallCommand);

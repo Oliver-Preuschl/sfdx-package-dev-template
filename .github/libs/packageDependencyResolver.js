@@ -85,7 +85,7 @@ class DependencyResolver {
       buildNumber
     );
     try {
-      const command = `sfdx force:data:soql:query --targetusername=devhub --usetoolingapi --query="SELECT SubscriberPackageVersionId, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE Package2.Name = '${packageName}' ${versionCriteriaString} ORDER BY MajorVersion DESC, MinorVersion DESC, PatchVersion DESC, BuildNumber DESC LIMIT 1" --json`;
+      const command = `sf data query --target-org devhub --use-tooling-api --query "SELECT SubscriberPackageVersionId, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE Package2.Name = '${packageName}' ${versionCriteriaString} ORDER BY MajorVersion DESC, MinorVersion DESC, PatchVersion DESC, BuildNumber DESC LIMIT 1" --json`;
       const packageVersion = await execCommand(command);
       return packageVersion?.result?.records?.[0]?.SubscriberPackageVersionId;
     } catch (e) {
@@ -158,7 +158,7 @@ class DependencyResolver {
     const installationKeyCriteria = installationKey
       ? ` AND (InstallationKey='${installationKey}')`
       : "";
-    const command = `sfdx force:data:soql:query --targetusername=devhub --usetoolingapi --query="SELECT Dependencies FROM SubscriberPackageVersion WHERE (Id='${subscriberPackageVersionId}') ${installationKeyCriteria}" --json`;
+    const command = `sf data query --target-org devhub --use-tooling-api --query "SELECT Dependencies FROM SubscriberPackageVersion WHERE (Id='${subscriberPackageVersionId}') ${installationKeyCriteria}" --json`;
     try {
       const directDependencySubscriberPackageVersions = await execCommand(
         command
@@ -249,7 +249,7 @@ class DependencyResolver {
     try {
       const subscriberPackageVersionIdsString =
         "('" + subscriberPackageVersionIds.join("','") + "')";
-      const command = `sfdx force:data:soql:query --targetusername=devhub --usetoolingapi --query="SELECT SubscriberPackageVersionId, Package2Id, Package2.Name FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
+      const command = `sf data query --target-org devhub --use-tooling-api --query "SELECT SubscriberPackageVersionId, Package2Id, Package2.Name FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
       const packageVersionsResponse = await execCommand(command);
       return new Map(
         packageVersionsResponse.result.records.map((package2Version) => [
