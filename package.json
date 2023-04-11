@@ -42,6 +42,6 @@
     ]
   },
   "dependencies": {
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.5.0"
   }
 }
