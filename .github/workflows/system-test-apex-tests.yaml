@@ -42,7 +42,7 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
           run_apex_tests=$(node ./.github/scripts/getPackageAttribute.js runApexTests)
-          echo "RUN_APEX_TESTS=$run_apex_tests" >> $GITHUB_ENV
+          echo "RUN_APEX_TESTS=${run_apex_tests}" >> $GITHUB_ENV
 
       - name: "Install Salesforce CLI"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
@@ -67,8 +67,8 @@ jobs:
         id: get_scratch_org_name
         run: |
           current_date="$(date +'%Y-%m-%d')"
-          scratch_org_name='${{ env.repository }}__test_$current_date'
-          echo "scratch_org_name=$scratch_org_name" >> $GITHUB_ENV
+          scratch_org_name='${{ env.repository }}__test_${current_date}'
+          echo "scratch_org_name=${scratch_org_name}" >> $GITHUB_ENV
 
       - name: "Create scratch org"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)

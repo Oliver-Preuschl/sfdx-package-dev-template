@@ -53,7 +53,7 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
           package_name='$(node ./.github/scripts/getPackageAttribute.js name)'
-          echo "PACKAGE_NAME=$package_name" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=${package_name}" >> $GITHUB_ENV
 
       - name: "Create new package"
         if: ${{ env.BRANCH == 'master' }}

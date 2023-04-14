@@ -60,7 +60,7 @@ jobs:
         if: ${{ env.BRANCH == 'master' }}
         run: |
           chmod +x ./.github/scripts/installPackageVersionInPipelineOrgs.js
-          node ./.github/scripts/installPackageVersionInPipelineOrgs.js "$SECRETS_CONTEXT" "${{ github.event.inputs.pipeline }}"
+          node ./.github/scripts/installPackageVersionInPipelineOrgs.js "${SECRETS_CONTEXT}" "${{ github.event.inputs.pipeline }}"
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
 

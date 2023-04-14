@@ -14,7 +14,7 @@
     "test:unit:coverage": "sfdx-lwc-jest --coverage",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
-    "scratch-org:auth": "sfdx force:auth:sfdxurl:store --sfdxurlfile=./config/scratch-org-auth-url.txt"
+    "scratch-org:auth": "sf org login sfdx-url --sfdx-url-file ./config/scratch-org-auth-url.txt"
   },
   "devDependencies": {
     "@prettier/plugin-xml": "^0.12.0",

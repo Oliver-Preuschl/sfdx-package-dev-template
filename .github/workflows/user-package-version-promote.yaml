@@ -72,14 +72,14 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
           package_name='$(node ./.github/scripts/getPackageAttribute.js name)'
-          echo "PACKAGE_NAME=$package_name" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=${package_name}" >> $GITHUB_ENV
 
       - name: "Get Package Version for entered Number"
         if: ${{ github.event.inputs.promoteLatestVersion == 'false' && github.event.inputs.versionNumberToPromote != '' }}
         id: get_package_version_for_entered_number
         run: |
           version_to_promote=$(sf package version list --packages "${{ env.PACKAGE_NAME }}" --order-by CreatedDate --concise | awk '$2 == "${{ github.event.inputs.versionNumberToPromote }}"' | awk '{print $3}')
-          echo "VERSION_TO_PROMOTE=$version_to_promote" >> $GITHUB_ENV
+          echo "VERSION_TO_PROMOTE=${version_to_promote}" >> $GITHUB_ENV
 
       - name: "Get latest Package Version"
         if: ${{ github.event.inputs.promoteLatestVersion == 'true' }}

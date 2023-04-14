@@ -22,6 +22,11 @@ jobs:
     if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        id: extract_branch_name
+        shell: bash
+        run: echo "BRANCH=${github.event.ref}" >> $GITHUB_ENV
+
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
@@ -42,21 +47,21 @@ jobs:
       - name: "Get Branch Name"
         id: get_branch_name
         run: |
-          branch_name='${{ github.event.ref }}'
+          branch_name='${{ env.BRANCH }}'
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
-          echo "branch_name=$branch_name" >> $GITHUB_ENV
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
 
       - name: "Get Scratch-Org-Auth-URL"
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
           auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
-          echo "auth_url=$auth_url" >> $GITHUB_ENV
+          echo "auth_url=${auth_url}" >> $GITHUB_ENV
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         run: |
           auth_url=${{ env.auth_url }}
-          echo $auth_url > ./SCRATCH_ORG_AUTH_URL.txt
+          echo ${auth_url} > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
         run: "sf org login sfdx-url --sfdx-url-file ./SCRATCH_ORG_AUTH_URL.txt --alias scratchorg --set-default"

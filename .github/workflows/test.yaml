@@ -13,12 +13,13 @@
 # limitations under the License.
 #
 
-name: "user:source:push [feature]"
+name: "test"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
-  PushSourceToScratchOrg:
+  Test:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
@@ -27,11 +28,9 @@ jobs:
         run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
-        if: ${{ env.BRANCH != 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
-        if: ${{ env.BRANCH != 'master' }}
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
@@ -40,40 +39,30 @@ jobs:
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: ${{ env.BRANCH != 'master' }}
-        shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: ${{ env.BRANCH != 'master' }}
         run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Get Branch Name"
-        if: ${{ env.BRANCH != 'master' }}
         id: get_branch_name
         run: |
           branch_name='${{ env.BRANCH }}'
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
-          echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
 
       - name: "Get Scratch-Org-Auth-URL"
-        if: ${{ env.BRANCH != 'master' }}
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
-          auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.BRANCH_NAME }}")
-          echo "AUTH_URL=${auth_url}" >> $GITHUB_ENV
+          echo $(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
+          auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
+          echo "auth_url=${auth_url}" >> $GITHUB_ENV
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
-        if: ${{ env.BRANCH != 'master' }}
         run: |
-          authurl=${{ env.AUTH_URL }}
-          echo ${authurl} > ./SCRATCH_ORG_AUTH_URL.txt
+          auth_url=${{ env.auth_url }}
+          echo $auth_url > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
-        if: ${{ env.BRANCH != 'master' }}
         run: "sf org login sfdx-url --sfdx-url-file ./SCRATCH_ORG_AUTH_URL.txt --alias scratchorg --set-default"
-
-      - name: "Push Source to ScratchOrg"
-        if: ${{ env.BRANCH != 'master' }}
-        run: "sf project deploy start --ignore-conflicts --ignore-warnings"

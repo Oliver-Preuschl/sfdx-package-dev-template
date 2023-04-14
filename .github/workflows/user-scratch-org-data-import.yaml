@@ -56,7 +56,7 @@ jobs:
         run: |
           branch_name='${{ env.BRANCH }}'
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
-          echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV
 
       - name: "Get Scratch-Org-Auth-URL"
         if: ${{ env.BRANCH != 'master' }}
@@ -64,13 +64,13 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
           auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.BRANCH_NAME }}")
-          echo "AUTH_URL=$auth_url" >> $GITHUB_ENV
+          echo "AUTH_URL=${auth_url}" >> $GITHUB_ENV
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
         if: ${{ env.BRANCH != 'master' }}
         run: |
           auth_url=${{ env.AUTH_URL }}
-          echo $auth_url > ./SCRATCH_ORG_AUTH_URL.txt
+          echo ${auth_url} > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
         if: ${{ env.BRANCH != 'master' }}

@@ -37,7 +37,7 @@ jobs:
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
           runlwctests=$(node ./.github/scripts/getPackageAttribute.js runLwcTests)
-          echo "RUN_LWC_TESTS=$runlwctests" >> $GITHUB_ENV
+          echo "RUN_LWC_TESTS=${runlwctests}" >> $GITHUB_ENV
 
       - name: "Restore node_modules cache"
         if: (env.RUN_LWC_TESTS == 'true') || (env.RUN_LWC_TESTS == true)

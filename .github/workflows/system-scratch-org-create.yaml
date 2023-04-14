@@ -63,8 +63,8 @@ jobs:
         id: get_scratch_org_name
         run: |
           current_date="$(date +'%Y-%m-%d')"
-          scratch_org_name='${{ env.REPOSITORY }}__${{ env.BRANCH }}_feature_$current_date'
-          echo "scratch_org_name=$scratch_org_name" >> $GITHUB_ENV
+          scratch_org_name="${{ env.REPOSITORY }}__${{ env.BRANCH }}__feature_${current_date}"
+          echo "scratch_org_name=${scratch_org_name}" >> $GITHUB_ENV
 
       - name: "Create scratch org"
         if: ${{ env.BRANCH != 'master' }}
@@ -76,15 +76,15 @@ jobs:
         run: |
           branch_name='${{ env.BRANCH }}'
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
-          echo "branch_name=$branch_name" >> $GITHUB_ENV
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
 
       - name: "Save Scratch-Orgs-JSON"
         if: ${{ env.BRANCH != 'master' }}
         id: save_scratch-orgs-json
         run: |
           chmod +x ./.github/scripts/buildScratchOrgFile.js
-          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ env.BRANCH_name }}" "${{ env.scratch_org_name }}")
-          echo $json > ./sfdx-scratch-orgs.json
+          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ env.branch_name }}" "${{ env.scratch_org_name }}")
+          echo ${json} > ./sfdx-scratch-orgs.json
 
       - name: "Build README"
         if: ${{ env.BRANCH != 'master' }}
@@ -97,8 +97,8 @@ jobs:
         id: save_sfdx_auth_url
         run: |
           chmod +x ./.github/scripts/buildSfdxAuthUrlFile.js
-          authUrl=$(node ./.github/scripts/buildSfdxAuthUrlFile.js "${{ env.BRANCH_name }}" "${{ env.scratch_org_name }}")
-          echo $authUrl > ./config/scratch-org-auth-url.txt
+          authUrl=$(node ./.github/scripts/buildSfdxAuthUrlFile.js "${{ env.branch_name }}" "${{ env.scratch_org_name }}")
+          echo ${authUrl} > ./config/scratch-org-auth-url.txt
 
       - name: "Commit Changes - ScratchOrgs, Readme"
         if: ${{ env.BRANCH != 'master' }}
