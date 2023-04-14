@@ -58,17 +58,9 @@ jobs:
         if: ${{ env.BRANCH != 'master' }}
         run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
-      - name: "Get ScratchOrg Name"
-        if: ${{ env.BRANCH != 'master' }}
-        id: get_scratch_org_name
-        run: |
-          current_date="$(date +'%Y-%m-%d')"
-          scratch_org_name="${{ env.REPOSITORY }}__${{ env.BRANCH }}__feature_${current_date}"
-          echo "scratch_org_name=${scratch_org_name}" >> $GITHUB_ENV
-
       - name: "Create scratch org"
         if: ${{ env.BRANCH != 'master' }}
-        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias "${{ env.scratch_org_name }}" --set-default --duration-days 30'
+        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias "new_scratch_org_name" --set-default --duration-days 30'
 
       - name: "Get Branch Name"
         if: ${{ env.BRANCH != 'master' }}
@@ -83,7 +75,7 @@ jobs:
         id: save_scratch-orgs-json
         run: |
           chmod +x ./.github/scripts/buildScratchOrgFile.js
-          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ env.branch_name }}" "${{ env.scratch_org_name }}")
+          json=$(node ./.github/scripts/buildScratchOrgFile.js "${{ env.branch_name }}" "new_scratch_org_name")
           echo ${json} > ./sfdx-scratch-orgs.json
 
       - name: "Build README"
@@ -97,7 +89,7 @@ jobs:
         id: save_sfdx_auth_url
         run: |
           chmod +x ./.github/scripts/buildSfdxAuthUrlFile.js
-          authUrl=$(node ./.github/scripts/buildSfdxAuthUrlFile.js "${{ env.branch_name }}" "${{ env.scratch_org_name }}")
+          authUrl=$(node ./.github/scripts/buildSfdxAuthUrlFile.js "${{ env.branch_name }}" "new_scratch_org_name")
           echo ${authUrl} > ./config/scratch-org-auth-url.txt
 
       - name: "Commit Changes - ScratchOrgs, Readme"
@@ -111,7 +103,7 @@ jobs:
 
       - name: "Display Scratch Org Login Link"
         if: ${{ env.BRANCH != 'master' }}
-        run: 'sf org open --target-org "${{ env.scratch_org_name }}"'
+        run: 'sf org open --target-org "new_scratch_org_name"'
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: ${{ env.BRANCH != 'master' }}
@@ -122,7 +114,7 @@ jobs:
         if: ${{ env.BRANCH != 'master' }}
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
-          node ./.github/scripts/installPackageDependencies.js "${{ env.scratch_org_name }}"
+          node ./.github/scripts/installPackageDependencies.js "new_scratch_org_name"
 
       - name: "Push Source to ScratchOrg"
         if: ${{ env.BRANCH != 'master' }}
@@ -130,7 +122,7 @@ jobs:
 
       - name: "Import Data into ScratchOrg"
         if: ${{ env.BRANCH != 'master' }}
-        run: sfdx sfdmu:run --sourceusername csvfile --targetusername "${{ env.scratch_org_name }}" --path data --noprompt --verbose --filelog 1
+        run: sfdx sfdmu:run --sourceusername csvfile --targetusername "new_scratch_org_name" --path data --noprompt --verbose --filelog 1
 
       - name: "Commit Changes - Data"
         if: ${{ env.BRANCH != 'master' }}

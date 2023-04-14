@@ -62,17 +62,9 @@ jobs:
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
-      - name: "Get ScratchOrg Name"
-        if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        id: get_scratch_org_name
-        run: |
-          current_date="$(date +'%Y-%m-%d')"
-          scratch_org_name='${{ env.repository }}__test_${current_date}'
-          echo "scratch_org_name=${scratch_org_name}" >> $GITHUB_ENV
-
       - name: "Create scratch org"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="${{ env.scratch_org_name }}" --set-default --duration-days 1'
+        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="apex_tests" --set-default --duration-days 1'
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
@@ -83,7 +75,7 @@ jobs:
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         run: |
           chmod +x ./.github/scripts/installPackageDependencies.js
-          node ./.github/scripts/installPackageDependencies.js "${{ env.scratch_org_name }}"
+          node ./.github/scripts/installPackageDependencies.js "apex_tests"
 
       - name: "Push Source to ScratchOrg"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
@@ -91,8 +83,8 @@ jobs:
 
       - name: "Run Apex tests"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: "sf apex run test --code-coverage --result-format human --output-dir ./tests/apex --wait 20"
+        run: "sf apex run test --test-level RunAllTestsInOrg --code-coverage --result-format human --output-dir ./tests/apex --wait 20"
 
       - name: "Delete scratch org"
         if: always() && (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: 'sf org delete scratch --target-org "${{ env.scratch_org_name }} --no-prompt"'
+        run: 'sf org delete scratch --target-org "apex_tests" --no-prompt'
