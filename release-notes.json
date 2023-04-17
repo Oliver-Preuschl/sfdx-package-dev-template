@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.2",
+      "releaseNotes": [
+        "Updated commands from sfdx to sf",
+        "Updated GitHub environment variables commands"
+      ]
+    },
+    {
       "version": "1.2.1",
       "releaseNotes": [
         "Updated the package version promotion workflow to be able to promote package versions other than the latest"
