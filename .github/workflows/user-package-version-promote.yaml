@@ -39,18 +39,18 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: "Checkout code"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install npm dependencies"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: npm ci
 
       - name: "Install Salesforce CLI"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
@@ -59,41 +59,40 @@ jobs:
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        if: ${{ env.BRANCH == 'master' }}
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Get Package Name"
         id: get_package_name
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          name='$(node ./.github/scripts/getPackageAttribute.js name)'
-          echo "::set-output name=package_name::$name"
+          package_name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          echo "PACKAGE_NAME=${package_name}" >> $GITHUB_ENV
 
       - name: "Get Package Version for entered Number"
         if: ${{ github.event.inputs.promoteLatestVersion == 'false' && github.event.inputs.versionNumberToPromote != '' }}
         id: get_package_version_for_entered_number
         run: |
-          versionToPromote=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | awk '$2 == "${{ github.event.inputs.versionNumberToPromote }}"' | awk '{print $3}')
-          echo "VERSION_TO_PROMOTE=$versionToPromote" >> $GITHUB_ENV
+          version_to_promote=$(sf package version list --packages "${{ env.PACKAGE_NAME }}" --order-by CreatedDate --concise | awk '$2 == "${{ github.event.inputs.versionNumberToPromote }}"' | awk '{print $3}')
+          echo "VERSION_TO_PROMOTE=${version_to_promote}" >> $GITHUB_ENV
 
       - name: "Get latest Package Version"
         if: ${{ github.event.inputs.promoteLatestVersion == 'true' }}
         id: get_latest_package_version
         run: |
-          versionToPromote=$(sfdx force:package:version:list -p "${{ steps.get_package_name.outputs.package_name }}" -o CreatedDate --concise | tail -1 | awk '{print $3}')
-          echo "VERSION_TO_PROMOTE=$versionToPromote" >> $GITHUB_ENV
+          version_to_promote=$(sf package version list --packages "${{ env.PACKAGE_NAME }}" --order-by CreatedDate --concise | tail -1 | awk '{print $3}')
+          echo "VERSION_TO_PROMOTE=$version_to_promote" >> $GITHUB_ENV
 
       - name: "Promote Package Version"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         id: promote_package_version
         run: |
-          sfdx force:package:version:promote --package ${{ env.VERSION_TO_PROMOTE }} --noprompt
-          echo "::set-output name=latest_package_version_id::$versionToPromote"
+          sf package version promote --package ${{ env.VERSION_TO_PROMOTE }} --no-prompt
 
       - name: "Get Release Name from Project Config"
         if: ${{ github.event.inputs.releaseName == '' && github.event.inputs.promoteLatestVersion == 'false' }}
@@ -106,7 +105,7 @@ jobs:
           echo "RELEASE_NAME=$(node ./.github/scripts/getProjectDefaultPackageDirectoryAttribute.js versionName)" | sed 's/ //g' >> $GITHUB_ENV
 
       - name: "Create Release"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -115,25 +114,25 @@ jobs:
           tag_name: "${{ env.RELEASE_NAME }}"
           release_name: "Release ${{ env.RELEASE_NAME }}"
           body: |
-            /packaging/installPackage.apexp?p0=${{ steps.promote_package_version.outputs.latest_package_version_id }}
+            /packaging/installPackage.apexp?p0=${{ env.VERSION_TO_PROMOTE }}
           draft: false
           prerelease: false
 
       - name: "Save Package-Versions-JSON"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         id: save_package_versions
         run: |
           chmod +x ./.github/scripts/getPackageVersions.js
           node ./.github/scripts/getPackageVersions.js > ./sfdx-package-versions.json
 
       - name: "Build README"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
+          node ./.github/scripts/buildReadme.js "${{ env.BRANCH}}"
 
       - name: "Commit Changes"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com

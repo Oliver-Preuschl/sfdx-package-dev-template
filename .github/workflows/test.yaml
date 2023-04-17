@@ -13,18 +13,20 @@
 # limitations under the License.
 #
 
-name: "system:dependencies:calculate [push]"
+name: "test"
 
 on:
-  push:
-    paths:
-      - "sfdx-package.json"
   workflow_dispatch:
 
 jobs:
-  calculate-dependencies:
+  Test:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        id: extract_branch_name
+        shell: bash
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
@@ -37,21 +39,30 @@ jobs:
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
         run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
-      - name: "Calculate SFDX-Project-Dependencies"
+      - name: "Get Branch Name"
+        id: get_branch_name
         run: |
-          chmod +x ./.github/scripts/calculatePackageDependencies.js
-          node ./.github/scripts/calculatePackageDependencies.js
+          branch_name='${{ env.BRANCH }}'
+          branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
 
-      - name: "Commit Changes"
+      - name: "Get Scratch-Org-Auth-URL"
+        id: get_scratch_org_auth_url
         run: |
-          git config user.name $GITHUB_ACTOR
-          git config user.email activation@hundw.com
-          git add sfdx-project.json sfdx-package.json
-          git commit -m "Package Version created"
-          git push
+          chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
+          echo $(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
+          auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.branch_name }}")
+          echo "auth_url=${auth_url}" >> $GITHUB_ENV
+
+      - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
+        run: |
+          auth_url=${{ env.auth_url }}
+          echo $auth_url > ./SCRATCH_ORG_AUTH_URL.txt
+
+      - name: "Authenticate Scratch Org"
+        run: "sf org login sfdx-url --sfdx-url-file ./SCRATCH_ORG_AUTH_URL.txt --alias scratchorg --set-default"

@@ -23,7 +23,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   const packageConfig = getPackageConfig();
   const packageName = packageConfig.name || "";
   const packageVersions = await execCommand(
-    `sfdx force:package:version:list --packages=${packageName} --verbose --json`
+    `sf package version list --packages ${packageName} --verbose --json`
   );
   console.log(JSON.stringify(packageVersions.result));
 })();

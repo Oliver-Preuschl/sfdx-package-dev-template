@@ -22,7 +22,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   const branchName = process.argv[2];
   const userName = process.argv[3];
   const scratchOrgDetailsString = await execCommand(
-    `sfdx force:org:open -u="${userName}" --json`
+    `sf org open --target-org "${userName}" --json`
   );
   let scratchOrgDetails = JSON.parse(scratchOrgDetailsString);
   let scratchOrgData = {
@@ -38,13 +38,13 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
   };
 
   const scratchOrgLoginString = await execCommand(
-    `sfdx force:org:open -u="${userName}" --json`
+    `sf org open --target-org "${userName}" --json`
   );
   let scratchOrgLogin = JSON.parse(scratchOrgLoginString);
   scratchOrgData.loginUrl = scratchOrgLogin.result.url;
 
   const scratchOrgPasswordString = await execCommand(
-    `sfdx force:user:password:generate --targetusername "${userName}" --json`
+    `sf org generate password --target-org "${userName}" --json`
   );
   let scratchOrgPassword = JSON.parse(scratchOrgPasswordString);
   scratchOrgData.password = scratchOrgPassword.result.password;

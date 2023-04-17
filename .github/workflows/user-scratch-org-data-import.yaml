@@ -25,14 +25,14 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install Salesforce CLI"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
@@ -42,46 +42,46 @@ jobs:
           sfdx plugins:install sfdmu
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        if: ${{ env.BRANCH != 'master' }}
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Get Branch Name"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         id: get_branch_name
         run: |
-          branchname='${{ steps.extract_branch_name.outputs.branch }}'
-          branchname="${branchname//[^0-9a-zA-Z_]/_}"
-          echo "::set-output name=branch_name::$branchname"
+          branch_name='${{ env.BRANCH }}'
+          branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
+          echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV
 
       - name: "Get Scratch-Org-Auth-URL"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         id: get_scratch_org_auth_url
         run: |
           chmod +x ./.github/scripts/getScratchOrgAuthUrl.js
-          authurl=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ steps.get_branch_name.outputs.branch_name }}")
-          echo "::set-output name=auth_url::$authurl"
+          auth_url=$(node ./.github/scripts/getScratchOrgAuthUrl.js "${{ env.BRANCH_NAME }}")
+          echo "AUTH_URL=${auth_url}" >> $GITHUB_ENV
 
       - name: "Populate auth file with SCRATCH_ORG_AUTH_URL secret"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         run: |
-          authurl=${{ steps.get_scratch_org_auth_url.outputs.auth_url }}
-          echo $authurl > ./SCRATCH_ORG_AUTH_URL.txt
+          auth_url=${{ env.AUTH_URL }}
+          echo ${auth_url} > ./SCRATCH_ORG_AUTH_URL.txt
 
       - name: "Authenticate Scratch Org"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
-        run: "sfdx auth:sfdxurl:store -f ./SCRATCH_ORG_AUTH_URL.txt -a scratchorg -s"
+        if: ${{ env.BRANCH != 'master' }}
+        run: "sf org login sfdx-url --sfdx-url-file ./SCRATCH_ORG_AUTH_URL.txt --alias scratchorg --set-default"
 
       - name: "Import Data into ScratchOrg"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         run: sfdx sfdmu:run --sourceusername csvfile --targetusername scratchorg --path data --noprompt --verbose --filelog 1
 
       - name: "Commit Changes"
-        if: ${{ steps.extract_branch_name.outputs.branch != 'master' }}
+        if: ${{ env.BRANCH != 'master' }}
         continue-on-error: true
         run: |
           git config user.name $GITHUB_ACTOR

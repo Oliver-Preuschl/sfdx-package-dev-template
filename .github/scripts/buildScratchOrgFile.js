@@ -32,7 +32,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
     fs.readFileSync("./sfdx-scratch-orgs.json", "utf8")
   );
   let removeScratchOrg = true;
-  while(removeScratchOrg){
+  while (removeScratchOrg) {
     let scratchOrgIndexToRemove = scratchOrgs.findIndex(
       (org) => org.branchName === branchName
     );
@@ -40,7 +40,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
       scratchOrgs = scratchOrgs.filter(
         (value, index) => index !== scratchOrgIndexToRemove
       );
-    }else{
+    } else {
       removeScratchOrg = false;
     }
   }
@@ -50,7 +50,7 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
 
 async function getScratchOrgDetails(branchName, scratchOrgName) {
   const scratchOrgDetails = await execCommand(
-    `sfdx force:org:display --targetusername="${scratchOrgName}" --verbose --json`
+    `sf org display --target-org "${scratchOrgName}" --verbose --json`
   );
   let scratchOrgData = {
     branchName: branchName,
@@ -65,12 +65,12 @@ async function getScratchOrgDetails(branchName, scratchOrgName) {
   };
 
   const scratchOrgLogin = await execCommand(
-    `sfdx force:org:open -u="${scratchOrgName}" --json`
+    `sf org open --target-org "${scratchOrgName}" --json`
   );
   scratchOrgData.loginUrl = scratchOrgLogin.result.url;
 
   const scratchOrgPassword = await execCommand(
-    `sfdx force:user:password:generate --targetusername "${scratchOrgName}" --json`
+    `sf org generate password --target-org "${scratchOrgName}" --json`
   );
   scratchOrgData.password = scratchOrgPassword.result.password;
 

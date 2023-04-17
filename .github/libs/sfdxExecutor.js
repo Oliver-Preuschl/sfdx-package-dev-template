@@ -23,9 +23,9 @@ const execCommand = async (command) => {
   return new Promise((resolve, reject) => {
     exec(command, function (error, stdout, stderr) {
       if (!error) {
-        resolve(JSON.parse(stdout));
+        resolve(JSON.parse(stdout.substring(stdout.indexOf("{"))));
       } else {
-        reject(JSON.parse(stdout));
+        reject(JSON.parse(stdout.substring(stdout.indexOf("{"))));
       }
     });
   });

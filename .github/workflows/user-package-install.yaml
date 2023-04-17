@@ -29,17 +29,17 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         uses: actions/checkout@v2
 
       - name: "Install npm dependencies"
         run: npm ci
 
       - name: "Install Salesforce CLI"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: |
           wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir sfdx-cli
@@ -48,26 +48,26 @@ jobs:
           echo "./sfdx-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         shell: bash
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
 
       - name: "Authenticate Dev Hub"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
-        run: "sfdx auth:sfdxurl:store -f ./DEVHUB_AUTH_URL.txt -a devhub -d"
+        if: ${{ env.BRANCH == 'master' }}
+        run: "sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --alias devhub --set-default-dev-hub"
 
       - name: "Install Package Versions"
-        if: ${{ steps.extract_branch_name.outputs.branch == 'master' }}
+        if: ${{ env.BRANCH == 'master' }}
         run: |
           chmod +x ./.github/scripts/installPackageVersionInPipelineOrgs.js
-          node ./.github/scripts/installPackageVersionInPipelineOrgs.js "$SECRETS_CONTEXT" "${{ github.event.inputs.pipeline }}"
+          node ./.github/scripts/installPackageVersionInPipelineOrgs.js "${SECRETS_CONTEXT}" "${{ github.event.inputs.pipeline }}"
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
 
       - name: "Build README"
         run: |
           chmod +x ./.github/scripts/buildReadme.js
-          node ./.github/scripts/buildReadme.js "${{ steps.extract_branch_name.outputs.branch}}"
+          node ./.github/scripts/buildReadme.js "${{ env.BRANCH}}"
 
       - name: "Commit Changes"
         run: |
