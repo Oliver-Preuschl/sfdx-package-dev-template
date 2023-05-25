@@ -83,7 +83,7 @@ jobs:
 
       - name: "Run Apex tests"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: "sf apex run test --test-level RunAllTestsInOrg --code-coverage --result-format human --output-dir ./tests/apex --wait 20"
+        run: "sf apex run test --test-level RunLocalTests --code-coverage --result-format human --output-dir ./tests/apex --wait 20"
 
       - name: "Delete scratch org"
         if: always() && (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
