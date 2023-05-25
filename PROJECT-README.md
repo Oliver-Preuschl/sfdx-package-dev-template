@@ -2,7 +2,7 @@
 <!-- badges:end -->
 
 ## Summary
-A brief description of the package content
+A brief description of the package content.
 
 ## Package Versions
 <!-- package-versions:start -->
