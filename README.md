@@ -1,31 +1,3 @@
-<!-- badges:start -->
-<!-- badges:end -->
-
-## Installation History
-
-<!-- installation-history:start -->
-<!-- installation-history:end -->
-
-## Pipelines
-
-<!-- pipelines:start -->
-<!-- pipelines:end -->
-
-## Scratch Orgs
-
-<!-- scratch-orgs:start -->
-<!-- scratch-orgs:end -->
-
-## Package Versions
-
-<!-- package-versions:start -->
-<!-- package-versions:end -->
-
-## ERD
-
-<!-- objects-erd:start -->
-<!-- objects-erd:end -->
-
 ## About
 
 This repository supports the development and installation of sfdx second-generation packages by leveraging the power of Github workflows (automated tasks & self service tasks). It supports unlocked packages (optional org dependent) as well as managed packages.
