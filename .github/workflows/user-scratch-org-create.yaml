@@ -62,7 +62,7 @@ jobs:
         if: ${{ env.BRANCH != 'master' }}
         id: get_scratch_org_name
         run: |
-          scratchorgname='${{ env.BRANCH }}_master'
+          scratchorgname="${{ env.BRANCH }}_master"
           echo "SCRATCH_ORG_NAME=${scratchorgname}" >> $GITHUB_ENV
 
       - name: "Create scratch org"
@@ -73,7 +73,7 @@ jobs:
         if: ${{ env.BRANCH != 'master' }}
         id: get_branch_name
         run: |
-          branch_name='${{ env.BRANCH }}'
+          branch_name="${{ env.BRANCH }}"
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
           echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV
 

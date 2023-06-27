@@ -58,14 +58,14 @@ jobs:
         id: get_package_name
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          package_name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          package_name="$(node ./.github/scripts/getPackageAttribute.js name)"
           echo "PACKAGE_NAME=${package_name}" >> $GITHUB_ENV
 
       - name: "Get Package Password"
         id: get_package_password
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          package_password='$(node ./.github/scripts/getPackageAttribute.js password)'
+          package_password="$(node ./.github/scripts/getPackageAttribute.js password)"
           echo "PACKAGE_PASSWORD=${package_password}" >> $GITHUB_ENV
 
       - name: "Create new package version - with password"

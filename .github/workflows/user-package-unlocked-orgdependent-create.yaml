@@ -52,7 +52,7 @@ jobs:
         id: get_package_name
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          name='$(node ./.github/scripts/getPackageAttribute.js name)'
+          name="$(node ./.github/scripts/getPackageAttribute.js name)"
           echo "package_name=$name" >> $GITHUB_ENV
 
       - name: "Create new package"
