@@ -64,7 +64,7 @@ jobs:
 
       - name: "Create scratch org"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="apex_tests" --set-default --duration-days 1'
+        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="apex_tests" --set-default --duration-days 1 --wait 60'
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
