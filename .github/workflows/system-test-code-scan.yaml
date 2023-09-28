@@ -35,7 +35,7 @@ jobs:
       - name: "Get scanner setting"
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          runsfdxscanner=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
+          run_sfdx_scanner=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
           echo "run_sfdx_scanner=${run_sfdx_scanner}" >> $GITHUB_ENV
 
       - name: "Install Salesforce CLI"
