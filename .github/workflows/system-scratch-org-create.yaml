@@ -108,7 +108,7 @@ jobs:
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: ${{ env.BRANCH != 'master' }}
         continue-on-error: true
-        run: "sf project deploy start --source-dir path/to/source 0-force-org-dependency --ignore-warnings --ignore-errors"
+        run: "sf project deploy start --source-dir 0-force-org-dependency --ignore-warnings --ignore-errors"
 
       - name: "Install SFDX-Project-Dependencies"
         if: ${{ env.BRANCH != 'master' }}
