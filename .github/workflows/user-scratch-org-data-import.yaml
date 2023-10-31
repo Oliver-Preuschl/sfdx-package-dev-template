@@ -34,11 +34,11 @@ jobs:
       - name: "Install Salesforce CLI"
         if: ${{ env.BRANCH != 'master' }}
         run: |
-          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-          mkdir sfdx-cli
-          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
-          export PATH=./sfdx-cli/bin:$PATH
-          echo "./sfdx-cli/bin" >> $GITHUB_PATH
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
+          mkdir sf-cli
+          tar xJf sf-linux-x64.tar.xz -C sf-cli --strip-components 1
+          export PATH=./sf-cli/bin:$PATH
+          echo "./sf-cli/bin" >> $GITHUB_PATH
           sfdx plugins:install sfdmu
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
