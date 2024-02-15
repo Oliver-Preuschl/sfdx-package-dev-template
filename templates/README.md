@@ -2,7 +2,7 @@
 <!-- badges:end -->
 
 ## Summary
-A brief description of the package content.
+*A brief description of the package content.*
 
 ## Package Versions
 <!-- package-versions:start -->
@@ -25,12 +25,12 @@ A brief description of the package content.
 <!-- scratch-orgs:end -->
 
 ## Installation Notes
-* Which additional steps have to be done?
-* Pre- & post-installation steps
+* *Which additional steps have to be done?*
+* *Pre- & post-installation steps*
 
 ## Testing
-Rough testing instructions.
+*Rough testing instructions.*
 
 ## Considerations
-Limitations / explanation of unobvious design decisions.
+*Limitations / explanation of unobvious design decisions.*
 
