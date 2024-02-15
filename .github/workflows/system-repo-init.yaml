@@ -22,7 +22,6 @@ on:
 
 jobs:
   create-package-version:
-    if: ${{ hashFiles('templates/README.md') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
@@ -32,13 +31,13 @@ jobs:
         run: npm ci
 
       - name: "Replace README"
-        run: "mv --force ./templates/README.md ./README.md"
+        run: |
+          "mv --force ./templates/README.md ./TEMPLATE-README.md"
+          "mv --force ./templates/README.md ./README.md"
+          "rm -rf ./templates"
 
-      - name: "Copy Template-README"
-        run: "mv --force ./templates/README.md ./TEMPLATE-README.md"
-
-      - name: "Remove templates directory"
-        run: "rm -rf ./templates"
+      - name: "Remove Workflow"
+        run: "rm -f ./.github/workflows/system-repo-init.yaml"
 
       - name: "Commit Changes"
         run: |
