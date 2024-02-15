@@ -5,5 +5,5 @@
   "edition": "Enterprise",
   "hasSampleData": false,
   "language": "en_US",
-  "features": ["LightningServiceConsole", "PersonAccounts"]
+  "features": []
 }
