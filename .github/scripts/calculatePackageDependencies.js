@@ -83,7 +83,7 @@ const {
     );
     fs.writeFile(
       "./sfdx-package.json",
-      JSON.stringify(packageConfig, null, 4),
+      JSON.stringify(packageConfig, null, 2),
       (error) => {
         if (error) {
           console.error(error);
@@ -103,7 +103,7 @@ const {
     }));
     fs.writeFile(
       "./sfdx-project.json",
-      JSON.stringify(projectConfig, null, 4),
+      JSON.stringify(projectConfig, null, 2),
       (error) => {
         if (error) {
           console.error(error);
