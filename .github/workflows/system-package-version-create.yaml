@@ -16,7 +16,9 @@
 name: "system:package:version:create [push:master]"
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - master
     paths:
@@ -26,12 +28,13 @@ on:
 
 jobs:
   create-package-version:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
         uses: actions/checkout@v2
@@ -70,11 +73,11 @@ jobs:
 
       - name: "Create new package version - with password"
         if: ${{ env.PACKAGE_PASSWORD != '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "${{ github.head_ref }} - ${{ github.event.pull_request.title }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ env.PACKAGE_PASSWORD == '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "${{ github.head_ref }} - ${{ github.event.pull_request.title }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
