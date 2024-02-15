@@ -20,13 +20,13 @@
     "@prettier/plugin-xml": "^0.12.0",
     "@salesforce/eslint-config-lwc": "^0.11.0",
     "@salesforce/eslint-plugin-aura": "^2.0.0",
-    "@salesforce/sfdx-lwc-jest": "^1.1.0",
+    "@salesforce/sfdx-lwc-jest": "^1.4.1",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
-    "husky": "^4.2.1",
-    "lint-staged": "^10.0.7",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1",
     "prettier": "^2.5.0",
-    "prettier-plugin-apex": "^1.10.0"
+    "prettier-plugin-apex": "^1.13.0"
   },
   "husky": {
     "hooks": {
@@ -42,6 +42,6 @@
     ]
   },
   "dependencies": {
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.5.0"
   }
 }

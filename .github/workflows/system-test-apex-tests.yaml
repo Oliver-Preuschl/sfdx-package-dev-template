@@ -47,11 +47,11 @@ jobs:
       - name: "Install Salesforce CLI"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
         run: |
-          wget -nv https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-          mkdir sfdx-cli
-          tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
-          export PATH=./sfdx-cli/bin:$PATH
-          echo "./sfdx-cli/bin" >> $GITHUB_PATH
+          wget -nv https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
+          mkdir sf-cli
+          tar xJf sf-linux-x64.tar.xz -C sf-cli --strip-components 1
+          export PATH=./sf-cli/bin:$PATH
+          echo "./sf-cli/bin" >> $GITHUB_PATH
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
@@ -64,7 +64,7 @@ jobs:
 
       - name: "Create scratch org"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
-        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="apex_tests" --set-default --duration-days 1'
+        run: 'sf org create scratch --definition-file config/project-scratch-def.json --alias="apex_tests" --set-default --duration-days 1 --wait 60'
 
       - name: "Deploy Org-Dependencies to ScratchOrg"
         if: (env.RUN_APEX_TESTS == 'true') || (env.RUN_APEX_TESTS == true)
