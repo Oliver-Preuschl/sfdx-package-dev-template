@@ -21,7 +21,7 @@ on:
       - "**"
 
 jobs:
-  create-package-version:
+  init-repo:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
@@ -32,9 +32,9 @@ jobs:
 
       - name: "Replace README"
         run: |
-          "mv --force ./templates/README.md ./TEMPLATE-README.md"
-          "mv --force ./templates/README.md ./README.md"
-          "rm -rf ./templates"
+          mv --force ./README.md ./TEMPLATE-README.md
+          mv --force ./templates/README.md ./README.md
+          rm -rf ./templates
 
       - name: "Remove Workflow"
         run: "rm -f ./.github/workflows/system-repo-init.yaml"
@@ -43,6 +43,7 @@ jobs:
         run: |
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
-          git add sfdx-project.json sfdx-package-versions.json README.md
-          git commit -m "Package Version created"
+          git pull --no-edit
+          git add README.md TEMPLATE-README.md templates ./.github/workflows/system-repo-init.yaml
+          git commit -m "Initialized Repository"
           git push
