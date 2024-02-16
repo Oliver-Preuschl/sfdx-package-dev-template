@@ -25,6 +25,19 @@ on:
       - "2-force-app/**"
       - "3-force-apex-test/**"
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Source Branch"
+        required: true
+        type: string
+      title:
+        description: "Title"
+        required: true
+        type: string
+      tsd_url:
+        description: "TSD URL"
+        required: true
+        type: string
 
 jobs:
   create-package-version:
@@ -71,21 +84,52 @@ jobs:
           package_password="$(node ./.github/scripts/getPackageAttribute.js password)"
           echo "PACKAGE_PASSWORD=${package_password}" >> $GITHUB_ENV
 
-      - name: "Get TSD URL"
-        id: get_tsd_url
+      - name: "Get Branch (Dispatch)"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_branch_dispatch
+        run: |
+          echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+
+      - name: "Get Branch (Pull Request)"
+        if: ${{ github.event_name == 'pull_request' }}
+        id: get_branch_pull_request
+        run: |
+          echo "BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
+
+      - name: "Get Title (Dispatch)"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_title_dispatch
+        run: |
+          echo "TITLE=${{ inputs.title }}" >> $GITHUB_ENV
+
+      - name: "Get Title (Pull Request)"
+        if: ${{ github.event_name == 'pull_request' }}
+        id: get_title_pull_request
+        run: |
+          echo "TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
+
+      - name: "Get TSD URL (Dispatch)"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_tsd_url_dispatch
+        run: |
+          echo "TSD_URL=${{ inputs.tsd_url }}" >> $GITHUB_ENV
+
+      - name: "Get TSD URL (Pull Request)"
+        if: ${{ github.event_name == 'pull_request' }}
+        id: get_tsd_url_pull_request
         run: |
           chmod +x ./.github/scripts/extractTsdUrl.js
-          tsd_url="$(node ./.github/scripts/extractTsdUrl.js ${{ github.event.pull_request.body }})"
+          tsd_url="$(node ./.github/scripts/extractTsdUrl.js "${{ github.event.pull_request.body }}")"
           echo "TSD_URL: ${tsd_url}"
           echo "TSD_URL=${tsd_url}" >> $GITHUB_ENV
 
       - name: "Create new package version - with password"
         if: ${{ env.PACKAGE_PASSWORD != '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ github.head_ref }}\", \"pullRequestTitle\" :\"${{ github.event.pull_request.title }}\"" --releasenotes-url "${{ env.TSD_URL }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"" --releasenotes-url "${{ env.TSD_URL }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ env.PACKAGE_PASSWORD == '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ github.head_ref }}\", \"pullRequestTitle\" :\"${{ github.event.pull_request.title }}\"" --releasenotes-url "${{ env.TSD_URL }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"" --releasenotes-url "${{ env.TSD_URL }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
