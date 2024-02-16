@@ -28,7 +28,7 @@ on:
 
 jobs:
   create-package-version:
-    if: github.event.pull_request.merged == true
+    if: ${{ github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
@@ -71,13 +71,21 @@ jobs:
           package_password="$(node ./.github/scripts/getPackageAttribute.js password)"
           echo "PACKAGE_PASSWORD=${package_password}" >> $GITHUB_ENV
 
+      - name: "Get TSD URL"
+        id: get_tsd_url
+        run: |
+          chmod +x ./.github/scripts/extractTsdUrl.js
+          tsd_url="$(node ./.github/scripts/extractTsdUrl.js ${{ github.event.pull_request.body }})"
+          echo "TSD_URL: ${tsd_url}"
+          echo "TSD_URL=${tsd_url}" >> $GITHUB_ENV
+
       - name: "Create new package version - with password"
         if: ${{ env.PACKAGE_PASSWORD != '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "${{ github.head_ref }} - ${{ github.event.pull_request.title }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ github.head_ref }}\", \"pullRequestTitle\" :\"${{ github.event.pull_request.title }}\"" --releasenotes-url "${{ env.TSD_URL }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ env.PACKAGE_PASSWORD == '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "${{ github.head_ref }} - ${{ github.event.pull_request.title }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ github.head_ref }}\", \"pullRequestTitle\" :\"${{ github.event.pull_request.title }}\"" --releasenotes-url "${{ env.TSD_URL }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
