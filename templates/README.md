@@ -2,35 +2,55 @@
 <!-- badges:end -->
 
 ## Summary
-*A brief description of the package content.*
+
+_A brief description of the package content._
 
 ## Package Versions
+
 <!-- package-versions:start -->
 <!-- package-versions:end -->
 
 ## ERD
+
 <!-- objects-erd:start -->
 <!-- objects-erd:end -->
 
 ## Installation History
+
 <!-- installation-history:start -->
 <!-- installation-history:end -->
 
 ## Pipelines
+
 <!-- pipelines:start -->
 <!-- pipelines:end -->
 
 ## Scratch Orgs
+
 <!-- scratch-orgs:start -->
 <!-- scratch-orgs:end -->
 
 ## Installation Notes
-* *Which additional steps have to be done?*
-* *Pre- & post-installation steps*
+
+- _Which additional steps have to be done?_
+- _Pre- & post-installation steps_
 
 ## Testing
-*Rough testing instructions.*
+
+_Rough testing instructions._
 
 ## Considerations
-*Limitations / explanation of unobvious design decisions.*
 
+_Limitations / explanation of unobvious design decisions._
+
+## Release Notes
+
+| Version | Release Notes |
+| ------- | ------------- |
+|         |               |
+
+## Update Instructions
+
+| Version | Update Instructions |
+| ------- | ------------------- |
+|         |                     |
