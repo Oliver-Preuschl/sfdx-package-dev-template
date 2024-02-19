@@ -25,7 +25,7 @@ class DependencyResolver {
 
   async getDependencies() {
     console.log(
-      "\n|------------------------------------------------------------"
+      "|------------------------------------------------------------"
     );
     console.log(`| Resolve Dependencies for ${this.dependency.packageName}`);
     const versionNumbers = this.getPackageVersionNumbersFromVersionString(
@@ -51,6 +51,7 @@ class DependencyResolver {
     console.log(
       "|------------------------------------------------------------"
     );
+    console.log(" ");
     if (this.hasError) {
       throw new Error();
     }
