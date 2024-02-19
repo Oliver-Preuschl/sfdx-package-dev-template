@@ -125,11 +125,11 @@ jobs:
 
       - name: "Create new package version - with password"
         if: ${{ env.PACKAGE_PASSWORD != '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"" --releasenotes-url "${{ env.TSD_URL }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"}" --releasenotes-url "${{ env.TSD_URL }}" --installation-key "${{ env.PACKAGE_PASSWORD }}" --code-coverage --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Create new package version - without password"
         if: ${{ env.PACKAGE_PASSWORD == '' }}
-        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"" --releasenotes-url "${{ env.TSD_URL }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
+        run: 'sf package version create --package "${{ env.PACKAGE_NAME }}" --version-description "{\"branch\": \"${{ env.BRANCH }}\", \"title\" :\"${{ env.TITLE }}\", \"tsdUrl\" :\"${{ env.TSD_URL }}\"}" --releasenotes-url "${{ env.TSD_URL }}" --code-coverage --installation-key-bypass --definition-file config/project-scratch-def.json --wait 60'
 
       - name: "Save Package-Versions-JSON"
         id: save_package_versions
