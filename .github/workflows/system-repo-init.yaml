@@ -22,7 +22,7 @@ on:
 
 jobs:
   init-repo:
-    if: ${{ github.repository != 'sfdx-package-dev-template' }}
+    if: github.repository != 'sfdx-package-dev-template'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
