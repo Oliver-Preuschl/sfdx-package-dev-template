@@ -20,11 +20,12 @@ class DependencyResolver {
   constructor({ dependency = null, packageConfig = null } = {}) {
     this.dependency = dependency;
     this.packageConfig = packageConfig;
+    this.hasError = false;
   }
 
   async getDependencies() {
     console.log(
-      "\n|------------------------------------------------------------"
+      "|------------------------------------------------------------"
     );
     console.log(`| Resolve Dependencies for ${this.dependency.packageName}`);
     const versionNumbers = this.getPackageVersionNumbersFromVersionString(
@@ -39,11 +40,10 @@ class DependencyResolver {
         patchVersion: versionNumbers.patchVersion
       }
     );
-    let dependencySubscriberPackageVersionIdsWithNames =
-      await this.getPackageDependencies(
-        subscriberPackageVersionId,
-        this.dependency.packageName
-      );
+    let dependencySubscriberPackageVersionIdsWithNames = await this.getPackageDependencies(
+      subscriberPackageVersionId,
+      this.dependency.packageName
+    );
     /*console.log(
       "| dependencySubscriberPackageVersionIdsWithNames",
       dependencySubscriberPackageVersionIdsWithNames
@@ -51,6 +51,10 @@ class DependencyResolver {
     console.log(
       "|------------------------------------------------------------"
     );
+    console.log(" ");
+    if (this.hasError) {
+      throw new Error();
+    }
     return dependencySubscriberPackageVersionIdsWithNames;
   }
 
@@ -143,14 +147,15 @@ class DependencyResolver {
     packageName,
     depth = 0
   ) {
-    console.log(`|${"--".repeat(depth)} ${packageName}`);
+    console.log(`|${"--".repeat(depth + 1)} ${packageName}`);
     if (
       subscriberPackageVersionId === null ||
       subscriberPackageVersionId === undefined ||
       packageName === null ||
       packageName === undefined
     ) {
-      console.log(`|${"--".repeat(depth)} Package not found in DevHub`);
+      console.error(`|${"--".repeat(depth)} Package not found in DevHub`);
+      this.hasError = true;
       return [];
     }
     let subscriberPackageVersionsToReturn = [];
@@ -167,20 +172,18 @@ class DependencyResolver {
         directDependencySubscriberPackageVersions.result.records?.[0]
           ?.Dependencies;
       if (dependencies?.ids) {
-        const directDependencySubscriberpackageVersions =
-          await this.getDirectDependencySubscriberPackageVersionIdsWithNames(
-            dependencies,
-            depth + 1
-          );
+        const directDependencySubscriberpackageVersions = await this.getDirectDependencySubscriberPackageVersionIdsWithNames(
+          dependencies,
+          depth + 1
+        );
         for (let directDependencySubscriberPackageVersion of directDependencySubscriberpackageVersions) {
           let directDependencyPackageName =
             directDependencySubscriberPackageVersion.packageName;
-          const recursiveDependencyubscriberPackageVersions =
-            await this.getPackageDependencies(
-              directDependencySubscriberPackageVersion.subscriberPackageVersionId,
-              directDependencyPackageName,
-              depth + 1
-            );
+          const recursiveDependencyubscriberPackageVersions = await this.getPackageDependencies(
+            directDependencySubscriberPackageVersion.subscriberPackageVersionId,
+            directDependencyPackageName,
+            depth + 1
+          );
           subscriberPackageVersionsToReturn = [
             ...recursiveDependencyubscriberPackageVersions,
             ...subscriberPackageVersionsToReturn
@@ -192,7 +195,8 @@ class DependencyResolver {
         { subscriberPackageVersionId, packageName, password: installationKey }
       ];
     } catch (e) {
-      console.log(`|${"--".repeat(depth)} > Error: ${JSON.stringify(e)}`);
+      console.error(`|${"--".repeat(depth + 1)} ! Error: ${e.message}`);
+      this.hasError = true;
     }
     return subscriberPackageVersionsToReturn;
   }
@@ -205,27 +209,25 @@ class DependencyResolver {
       let directDependencySubscriberPackageVersionIds = dependencies.ids.map(
         (dependency) => dependency.subscriberPackageVersionId
       );
-      let directDependencySubscriberPackageVersionId2PackageName =
-        await this.getPackageNamesForPackageSubscriberPackageVersionIds(
-          directDependencySubscriberPackageVersionIds
-        );
-      let directDependencySubscriberPackageVersionIdsWithNames =
-        directDependencySubscriberPackageVersionIds.map(
-          (subscriberPackageVersionId) => ({
-            subscriberPackageVersionId: subscriberPackageVersionId,
-            packageName:
-              directDependencySubscriberPackageVersionId2PackageName.get(
-                subscriberPackageVersionId
-              )
-          })
-        );
+      let directDependencySubscriberPackageVersionId2PackageName = await this.getPackageNamesForPackageSubscriberPackageVersionIds(
+        directDependencySubscriberPackageVersionIds
+      );
+      let directDependencySubscriberPackageVersionIdsWithNames = directDependencySubscriberPackageVersionIds.map(
+        (subscriberPackageVersionId) => ({
+          subscriberPackageVersionId: subscriberPackageVersionId,
+          packageName: directDependencySubscriberPackageVersionId2PackageName.get(
+            subscriberPackageVersionId
+          )
+        })
+      );
       return directDependencySubscriberPackageVersionIdsWithNames;
     } catch (e) {
       console.log(
         "getDirectDependencySubscriberPackageVersionIdsWithNames",
         JSON.stringify(e)
       );
-      throw new Error(e.message);
+      //throw new Error(e.message);
+      this.hasError = true;
     }
   }
 

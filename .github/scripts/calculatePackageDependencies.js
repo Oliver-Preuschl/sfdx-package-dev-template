@@ -25,6 +25,7 @@ const {
 } = require("../libs/configProvider.js");
 
 (async function () {
+  let hasErrors = false;
   try {
     const projectConfig = getProjectConfig();
     const packageConfig = getPackageConfig();
@@ -36,16 +37,19 @@ const {
         continue;
       }
       if (dependency.versionNumber) {
-        const dependencyResolver = new DependencyResolver({
-          dependency,
-          packageConfig
-        });
-        const dependencySubscriberPackageVersionIdsWithNames =
-          await dependencyResolver.getDependencies();
-        subscriberPackageVersions = [
-          ...subscriberPackageVersions,
-          ...dependencySubscriberPackageVersionIdsWithNames
-        ];
+        try {
+          const dependencyResolver = new DependencyResolver({
+            dependency,
+            packageConfig
+          });
+          const dependencySubscriberPackageVersionIdsWithNames = await dependencyResolver.getDependencies();
+          subscriberPackageVersions = [
+            ...subscriberPackageVersions,
+            ...dependencySubscriberPackageVersionIdsWithNames
+          ];
+        } catch (e) {
+          hasErrors = true;
+        }
       } else {
         console.log(
           "Adding ",
@@ -83,7 +87,7 @@ const {
     );
     fs.writeFile(
       "./sfdx-package.json",
-      JSON.stringify(packageConfig, null, 4),
+      JSON.stringify(packageConfig, null, 2),
       (error) => {
         if (error) {
           console.error(error);
@@ -103,7 +107,7 @@ const {
     }));
     fs.writeFile(
       "./sfdx-project.json",
-      JSON.stringify(projectConfig, null, 4),
+      JSON.stringify(projectConfig, null, 2),
       (error) => {
         if (error) {
           console.error(error);
@@ -111,7 +115,10 @@ const {
       }
     );
   } catch (e) {
-    console.error(e.message, e.stack);
+    hasErrors = true;
+  }
+  if (hasErrors) {
+    process.exit(1);
   }
 })();
 
@@ -132,8 +139,9 @@ function normalizeDependency(dependency) {
 
 async function getSortedPackageVersions(subscriberPackageVersions) {
   try {
-    const subscriberPackageVersionIdsString =
-      getSubscriberPackageVersionIdsString(subscriberPackageVersions);
+    const subscriberPackageVersionIdsString = getSubscriberPackageVersionIdsString(
+      subscriberPackageVersions
+    );
     const command = `sf data query --target-org devhub --use-tooling-api --query "SELECT SubscriberPackageVersionId, Package2Id, Package2.Name, Name, MajorVersion, MinorVersion, PatchVersion, BuildNumber FROM Package2Version WHERE SubscriberPackageVersionId IN ${subscriberPackageVersionIdsString} ORDER BY Package2.Name DESC" --json`;
     const devHubAvailablePackageVersionsResponse = await execCommand(command);
     let subscriberPackageVersionId2Name = getSubsriberPackageVersionId2NameMap(

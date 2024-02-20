@@ -53,5 +53,5 @@ jobs:
           git config user.name $GITHUB_ACTOR
           git config user.email activation@hundw.com
           git add sfdx-project.json sfdx-package.json
-          git commit -m "Package Version created"
+          git commit -m "Calculated Dependencies"
           git push
