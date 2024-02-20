@@ -19,6 +19,7 @@ on: create
 
 jobs:
   CreateScratchOrg:
+    if: github.repository != 'Oliver-Preuschl/sfdx-package-dev-template'
     runs-on: ubuntu-latest
     steps:
       - name: Extract repository name
