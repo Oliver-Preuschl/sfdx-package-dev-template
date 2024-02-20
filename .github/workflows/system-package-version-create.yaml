@@ -41,7 +41,7 @@ on:
 
 jobs:
   create-package-version:
-    if: ${{ github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.repository != 'Oliver-Preuschl/sfdx-package-dev-template' && (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name

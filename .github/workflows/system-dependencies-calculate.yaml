@@ -23,6 +23,7 @@ on:
 
 jobs:
   calculate-dependencies:
+    if: github.repository != 'Oliver-Preuschl/sfdx-package-dev-template'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
