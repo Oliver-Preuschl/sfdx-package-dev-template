@@ -58,7 +58,7 @@ jobs:
 
       - name: "Create new package"
         if: ${{ env.branch == 'master' }}
-        run: 'sf package create --name "${{ env.package_name }}" --description "{\"repositoryUrl\": \"${{ github.server_url }}/${{ github.repository }}\"" --package-type Managed --path 2-force-app'
+        run: 'sf package create --name "${{ env.package_name }}" --description "{\"repositoryUrl\": \"${{ github.server_url }}/${{ github.repository }}\"}" --package-type Managed --path 2-force-app'
 
       - name: "Commit Changes"
         if: ${{ env.branch == 'master' }}
