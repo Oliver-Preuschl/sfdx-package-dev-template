@@ -20,5 +20,5 @@
   const pullRequestBody = process.argv[2];
   const matchResponse = /tsd\(\s*(.*)\s*\)/.exec(pullRequestBody);
   const tsdUrl = matchResponse?.[1];
-  console.log(tsdUrl);
+  console.log(!!tsdUrl || "");
 })();
