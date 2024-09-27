@@ -28,7 +28,10 @@ jobs:
         run: echo "BRANCH=${github.event.ref}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: "Setup Node"
+        uses: actions/setup-node@v4
 
       - name: "Install Salesforce CLI"
         run: |
