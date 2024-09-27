@@ -43,7 +43,11 @@ jobs:
 
       - name: "Checkout code"
         if: ${{ env.BRANCH == 'master' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: "Setup Node"
+        if: ${{ env.BRANCH == 'master' }}
+        uses: actions/setup-node@v4
 
       - name: "Install npm dependencies"
         if: ${{ env.BRANCH == 'master' }}

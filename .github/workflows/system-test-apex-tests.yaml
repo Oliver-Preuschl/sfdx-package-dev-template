@@ -36,7 +36,10 @@ jobs:
         run: echo "repository=${GITHUB_REPOSITORY/\//-}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: "Setup Node"
+        uses: actions/setup-node@v4
 
       - name: "Get scanner setting"
         id: get_apex_test_setting
