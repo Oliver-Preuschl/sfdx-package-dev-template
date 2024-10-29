@@ -35,6 +35,9 @@ jobs:
       - name: "Setup Node"
         uses: actions/setup-node@v4
 
+      - name: "Install npm dependencies"
+        run: npm ci
+
       - name: "Get scanner setting"
         id: get_lwc_test_setting
         run: |

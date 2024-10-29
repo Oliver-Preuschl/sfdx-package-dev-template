@@ -36,6 +36,9 @@ jobs:
       - name: "Setup Node"
         uses: actions/setup-node@v4
 
+      - name: "Install npm dependencies"
+        run: npm ci
+
       - name: "Get scanner setting"
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
@@ -44,12 +47,7 @@ jobs:
 
       - name: "Install Salesforce CLI"
         if: (env.run_sfdx_scanner == 'true') || (env.run_sfdx_scanner == true)
-        run: |
-          wget -nv https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
-          mkdir sf-cli
-          tar xJf sf-linux-x64.tar.xz -C sf-cli --strip-components 1
-          export PATH=./sf-cli/bin:$PATH
-          echo "./sf-cli/bin" >> $GITHUB_PATH
+        run: npm install -g @salesforce/cli@latest --global
 
       - name: "Install SFDX Plugins"
         if: (env.run_sfdx_scanner == 'true') || (env.run_sfdx_scanner == true)
