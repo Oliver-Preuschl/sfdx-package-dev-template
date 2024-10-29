@@ -34,14 +34,13 @@ jobs:
         if: ${{ env.BRANCH == 'master' }}
         uses: actions/setup-node@v4
 
+      - name: "Install npm dependencies"
+        if: ${{ env.BRANCH == 'master' }}
+        run: npm ci
+
       - name: "Install Salesforce CLI"
         if: ${{ env.branch == 'master' }}
-        run: |
-          wget -nv https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
-          mkdir sf-cli
-          tar xJf sf-linux-x64.tar.xz -C sf-cli --strip-components 1
-          export PATH=./sf-cli/bin:$PATH
-          echo "./sf-cli/bin" >> $GITHUB_PATH
+        run: npm install -g @salesforce/cli@latest --global
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ env.branch == 'master' }}
