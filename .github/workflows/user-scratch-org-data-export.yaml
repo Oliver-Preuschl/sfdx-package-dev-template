@@ -41,7 +41,9 @@ jobs:
 
       - name: "Install Salesforce CLI"
         if: ${{ env.BRANCH != 'master' }}
-        run: npm install -g @salesforce/cli@latest --global
+        run: |
+          npm install -g @salesforce/cli@latest --global
+          sf plugins install sfdmu
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         if: ${{ env.BRANCH != 'master' }}
