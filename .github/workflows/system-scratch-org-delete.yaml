@@ -25,7 +25,7 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "BRANCH=${github.event.ref}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.event.ref }}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
         uses: actions/checkout@v4
@@ -51,6 +51,7 @@ jobs:
           branch_name="${{ env.BRANCH }}"
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
           echo "branch_name=${branch_name}" >> $GITHUB_ENV
+          echo ${branch_name}
 
       - name: "Get Scratch-Org-Auth-URL"
         id: get_scratch_org_auth_url
