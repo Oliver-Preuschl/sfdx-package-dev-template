@@ -25,7 +25,7 @@ jobs:
       - name: Extract branch name
         id: extract_branch_name
         shell: bash
-        run: echo "BRANCH=${github.event.ref}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.event.ref }}" >> $GITHUB_ENV
 
       - name: "Checkout source code"
         uses: actions/checkout@v4
@@ -33,13 +33,11 @@ jobs:
       - name: "Setup Node"
         uses: actions/setup-node@v4
 
+      - name: "Install npm dependencies"
+        run: npm ci
+
       - name: "Install Salesforce CLI"
-        run: |
-          wget -nv https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
-          mkdir sf-cli
-          tar xJf sf-linux-x64.tar.xz -C sf-cli --strip-components 1
-          export PATH=./sf-cli/bin:$PATH
-          echo "./sf-cli/bin" >> $GITHUB_PATH
+        run: npm install -g @salesforce/cli@latest --global
 
       - name: "Populate auth file with DEVHUB_AUTH_URL secret"
         run: "echo ${{ secrets.DEVHUB_AUTH_URL}} > ./DEVHUB_AUTH_URL.txt"
@@ -53,6 +51,7 @@ jobs:
           branch_name="${{ env.BRANCH }}"
           branch_name="${branch_name//[^0-9a-zA-Z_]/_}"
           echo "branch_name=${branch_name}" >> $GITHUB_ENV
+          echo ${branch_name}
 
       - name: "Get Scratch-Org-Auth-URL"
         id: get_scratch_org_auth_url
