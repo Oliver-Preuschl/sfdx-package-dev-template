@@ -18,16 +18,15 @@ const { execCommand } = require("../libs/sfdxExecutor");
 
 class DependencyResolver {
   constructor({ dependency = null, packageConfig = null } = {}) {
+    this.messages = [];
     this.dependency = dependency;
     this.packageConfig = packageConfig;
     this.hasError = false;
   }
 
   async getDependencies() {
-    console.log(
-      "|------------------------------------------------------------"
-    );
-    console.log(`| Resolve Dependencies for ${this.dependency.packageName}`);
+    this.log("|------------------------------------------------------------");
+    this.log(`| Resolving Dependencies for ${this.dependency.packageName}`);
     const versionNumbers = this.getPackageVersionNumbersFromVersionString(
       this.dependency.versionNumber
     );
@@ -44,14 +43,13 @@ class DependencyResolver {
       subscriberPackageVersionId,
       this.dependency.packageName
     );
-    /*console.log(
+    /*this.log(
       "| dependencySubscriberPackageVersionIdsWithNames",
       dependencySubscriberPackageVersionIdsWithNames
     );*/
-    console.log(
-      "|------------------------------------------------------------"
-    );
-    console.log(" ");
+    this.log("|------------------------------------------------------------");
+    this.log(" ");
+    //console.log(this.messages);
     if (this.hasError) {
       throw new Error();
     }
@@ -147,16 +145,25 @@ class DependencyResolver {
     packageName,
     depth = 0
   ) {
-    console.log(`|${"--".repeat(depth + 1)} ${packageName}`);
     if (
       subscriberPackageVersionId === null ||
       subscriberPackageVersionId === undefined ||
       packageName === null ||
       packageName === undefined
     ) {
-      console.error(`|${"--".repeat(depth)} Package not found in DevHub`);
-      this.hasError = true;
+      this.log(
+        `|${"--".repeat(
+          depth + 1
+        )} ${packageName}/${subscriberPackageVersionId} (Package not found in DevHub)`
+      );
+      //this.hasError = true;
       return [];
+    } else {
+      this.log(
+        `|${"--".repeat(
+          depth + 1
+        )} ${packageName}/${subscriberPackageVersionId}`
+      );
     }
     let subscriberPackageVersionsToReturn = [];
     const installationKey = this.getInstallationKey(packageName, depth);
@@ -174,7 +181,7 @@ class DependencyResolver {
       if (dependencies?.ids) {
         const directDependencySubscriberpackageVersions = await this.getDirectDependencySubscriberPackageVersionIdsWithNames(
           dependencies,
-          depth + 1
+          depth
         );
         for (let directDependencySubscriberPackageVersion of directDependencySubscriberpackageVersions) {
           let directDependencyPackageName =
@@ -220,9 +227,18 @@ class DependencyResolver {
           )
         })
       );
+      /*this.log(
+        `|${"  ".repeat(depth + 1)} Dependencies: ` +
+          directDependencySubscriberPackageVersionIdsWithNames
+            .map(
+              (subscriberPackageVersionId2PackageName) =>
+                `${subscriberPackageVersionId2PackageName.packageName}/${subscriberPackageVersionId2PackageName.subscriberPackageVersionId}`
+            )
+            .join(", ")
+      );*/
       return directDependencySubscriberPackageVersionIdsWithNames;
     } catch (e) {
-      console.log(
+      this.log(
         "getDirectDependencySubscriberPackageVersionIdsWithNames",
         JSON.stringify(e)
       );
@@ -262,6 +278,11 @@ class DependencyResolver {
     } catch (e) {
       throw new Error(e.message);
     }
+  }
+
+  log(message) {
+    //this.messages.push(message);
+    console.log(message);
   }
 }
 

@@ -26,6 +26,7 @@ const {
 
 (async function () {
   let hasErrors = false;
+  let errors = [];
   try {
     const projectConfig = getProjectConfig();
     const packageConfig = getPackageConfig();
@@ -49,6 +50,11 @@ const {
           ];
         } catch (e) {
           hasErrors = true;
+          errors.push({
+            name: e.name,
+            message: e.message,
+            stacktrace: e.stack
+          });
         }
       } else {
         console.log(
@@ -116,8 +122,16 @@ const {
     );
   } catch (e) {
     hasErrors = true;
+    errors.push({ name: e.name, message: e.message, stacktrace: e.stack });
   }
   if (hasErrors) {
+    console.log(
+      "\n|------------------------------------------------------------"
+    );
+    console.log("| Errors", errors);
+    console.log(
+      "|------------------------------------------------------------"
+    );
     process.exit(1);
   }
 })();
