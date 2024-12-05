@@ -77,15 +77,17 @@ jobs:
         if: ${{ github.event.inputs.promoteLatestVersion == 'false' && github.event.inputs.versionNumberToPromote != '' }}
         id: get_package_version_for_entered_number
         run: |
-          version_to_promote=$(sf package version list --packages "${{ env.PACKAGE_NAME }}" --order-by CreatedDate --concise | awk '$2 == "${{ github.event.inputs.versionNumberToPromote }}"' | awk '{print $3}')
+          chmod +x ./.github/scripts/getSubscriberPackageVersionIdByVersionNumber.js
+          version_to_promote=$(node ./.github/scripts/getSubscriberPackageVersionIdByVersionNumber.js "${{ env.PACKAGE_NAME }}" "${{ github.event.inputs.versionNumberToPromote }}")
           echo "VERSION_TO_PROMOTE=${version_to_promote}" >> $GITHUB_ENV
 
       - name: "Get latest Package Version"
         if: ${{ github.event.inputs.promoteLatestVersion == 'true' }}
         id: get_latest_package_version
         run: |
-          version_to_promote=$(sf package version list --packages "${{ env.PACKAGE_NAME }}" --order-by CreatedDate --concise | tail -1 | awk '{print $3}')
-          echo "VERSION_TO_PROMOTE=$version_to_promote" >> $GITHUB_ENV
+          chmod +x ./.github/scripts/getLatestSubscriberPackageVersionId.js
+          version_to_promote=$(node ./.github/scripts/getLatestSubscriberPackageVersionId.js "${{ env.PACKAGE_NAME }}")
+          echo "VERSION_TO_PROMOTE=${version_to_promote}" >> $GITHUB_ENV
 
       - name: "Promote Package Version"
         if: ${{ env.BRANCH == 'master' }}
