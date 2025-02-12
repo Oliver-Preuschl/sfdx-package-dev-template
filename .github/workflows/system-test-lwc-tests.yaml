@@ -48,7 +48,7 @@ jobs:
       - name: "Restore node_modules cache"
         if: (env.RUN_LWC_TESTS == 'true') || (env.RUN_LWC_TESTS == true)
         id: cache-npm
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: npm-${{ hashFiles('**/package-lock.json') }}

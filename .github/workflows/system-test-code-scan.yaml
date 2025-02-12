@@ -57,7 +57,7 @@ jobs:
       - name: "Restore node_modules cache"
         if: (env.run_sfdx_scanner == 'true') || (env.run_sfdx_scanner == true)
         id: cache-npm
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: npm-${{ hashFiles('**/package-lock.json') }}
