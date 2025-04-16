@@ -39,7 +39,7 @@ jobs:
       - name: "Commit changes"
         run: |
           git config user.name $GITHUB_ACTOR
-          git config user.email activation@hundw.comgit pull --no-edit
+          git config user.email activation@hundw.com
           git add .
           git commit -m "Fixed vulnerabilities (npm audit fix)"
           git push
