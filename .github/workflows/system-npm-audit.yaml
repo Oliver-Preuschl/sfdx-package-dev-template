@@ -18,6 +18,7 @@ name: "system:repo:init [push:**]"
 on:
   schedule:
     - cron: "0 23 * * *"
+  workflow_dispatch:
 
 jobs:
   init-repo:
@@ -38,8 +39,7 @@ jobs:
       - name: "Commit changes"
         run: |
           git config user.name $GITHUB_ACTOR
-          git config user.email activation@hundw.com
-          git pull --no-edit
-          git add README.md TEMPLATE-README.md templates ./.github/workflows/system-repo-init.yaml
-          git commit -m "Initialized Repository"
+          git config user.email activation@hundw.comgit pull --no-edit
+          git add .
+          git commit -m "Fixed vulnerabilities (npm audit fix)"
           git push
