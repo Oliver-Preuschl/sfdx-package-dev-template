@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-name: "system:repo:init [push:**]"
+name: "system:vulnerabilities:fix"
 
 on:
   schedule:
