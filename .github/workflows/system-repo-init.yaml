@@ -20,6 +20,9 @@ on:
     branches:
       - "**"
 
+permissions:
+  contents: write
+
 jobs:
   init-repo:
     if: github.repository != 'Oliver-Preuschl/sfdx-package-dev-template'
