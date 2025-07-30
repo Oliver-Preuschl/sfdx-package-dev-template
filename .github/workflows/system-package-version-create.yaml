@@ -39,6 +39,9 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   create-package-version:
     if: ${{ github.repository != 'Oliver-Preuschl/sfdx-package-dev-template' && (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') }}

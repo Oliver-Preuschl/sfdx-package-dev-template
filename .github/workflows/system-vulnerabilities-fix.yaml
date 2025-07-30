@@ -20,6 +20,9 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   init-repo:
     runs-on: ubuntu-latest

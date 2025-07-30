@@ -18,6 +18,9 @@ name: "user:data:export [feature]"
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ExportDataFromScratchOrg:
     runs-on: ubuntu-latest

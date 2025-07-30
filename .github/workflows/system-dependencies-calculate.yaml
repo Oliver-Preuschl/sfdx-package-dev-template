@@ -21,6 +21,9 @@ on:
       - "sfdx-package.json"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   calculate-dependencies:
     if: github.repository != 'Oliver-Preuschl/sfdx-package-dev-template'

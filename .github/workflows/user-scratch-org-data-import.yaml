@@ -18,6 +18,9 @@ name: "user:data:import [feature]"
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ImportDataIntoScratchOrg:
     runs-on: ubuntu-latest

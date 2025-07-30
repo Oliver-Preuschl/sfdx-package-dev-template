@@ -17,6 +17,9 @@ name: "user:package:unlocked:orgdependent:create [master]"
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   create-package:
     runs-on: ubuntu-latest

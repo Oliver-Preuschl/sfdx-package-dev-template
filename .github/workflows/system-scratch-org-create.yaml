@@ -17,6 +17,9 @@ name: "system:scratch-org:create [create:feature]"
 
 on: create
 
+permissions:
+  contents: write
+
 jobs:
   CreateScratchOrg:
     if: github.repository != 'Oliver-Preuschl/sfdx-package-dev-template'
