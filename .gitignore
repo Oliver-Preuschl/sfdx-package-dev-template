@@ -43,3 +43,10 @@ $RECYCLE.BIN/
 
 # Illuminated Cloud
 IlluminatedCloud/
+
+# Added by Illuminated Cloud
+/out/
+target/
+/.illuminatedCloud/
+**/tsconfig*.json
+**/*.tsbuildinfo
