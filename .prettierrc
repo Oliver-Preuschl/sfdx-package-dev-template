@@ -1,15 +1,12 @@
 {
   "trailingComma": "es5",
-  "tabWidth": 4,
-  "singleQuote": true,
-  "printWidth": 180,
+  "tabWidth": 2,
+  "singleQuote": false,
+  "printWidth": 100,
   "embeddedLanguageFormatting": "auto",
   "endOfLine": "lf",
   "apexInsertFinalNewline": false,
-  "plugins": [
-    "prettier-plugin-apex",
-    "@prettier/plugin-xml"
-  ],
+  "plugins": ["prettier-plugin-apex", "@prettier/plugin-xml"],
   "overrides": [
     {
       "files": "**/lwc/**/*.html",
@@ -26,13 +23,15 @@
     {
       "files": "**/*.{trigger,cls}",
       "options": {
-        "parser": "apex"
+        "parser": "apex",
+        "singleQuote": true
       }
     },
     {
       "files": "**/*.{apex,soql}",
       "options": {
-        "parser": "apex-anonymous"
+        "parser": "apex-anonymous",
+        "singleQuote": true
       }
     }
   ]
