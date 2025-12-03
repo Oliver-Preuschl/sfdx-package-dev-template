@@ -1,11 +1,14 @@
 {
-  "trailingComma": "none",
-  "tabWidth": 2,
+  "tabWidth": 4,
   "singleQuote": false,
-  "printWidth": 100,
-  "embeddedLanguageFormatting": "auto",
+  "printWidth": 120,
   "endOfLine": "lf",
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "singleAttributePerLine": true,
+  "embeddedLanguageFormatting": "auto",
   "apexInsertFinalNewline": false,
+  "trailingComma": "none",
   "plugins": ["prettier-plugin-apex", "@prettier/plugin-xml"],
   "overrides": [
     {
