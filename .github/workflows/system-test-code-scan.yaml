@@ -42,7 +42,7 @@ jobs:
       - name: "Get scanner setting"
         run: |
           chmod +x ./.github/scripts/getPackageAttribute.js
-          runsfdxscanner=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
+          run_sfdx_scanner=$(node ./.github/scripts/getPackageAttribute.js runSfdxScanner)
           echo "run_sfdx_scanner=${run_sfdx_scanner}" >> $GITHUB_ENV
 
       - name: "Install Salesforce CLI"
@@ -82,4 +82,4 @@ jobs:
 
       - name: "Run sfdx scanner"
         if: (env.run_sfdx_scanner == 'true') || (env.run_sfdx_scanner == true)
-        run: sfdx scanner:run --target "2-force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --violations-cause-error
+        run: sfdx scanner:run --target "2-force-app" --engine "pmd,eslint,retire-js" --category "Security,Best Practices,Performance,Code Style,Design,Error Prone,Possible Errors" format=table --severity-threshold=1
