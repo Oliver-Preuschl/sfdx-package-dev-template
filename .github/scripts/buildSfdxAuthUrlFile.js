@@ -31,20 +31,23 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
 })();
 
 async function getScratchOrgDetails(branchName, scratchOrgName) {
-  const scratchOrgDetails = await execCommand(
+  const scratchOrgDetailResponse = await execCommand(
     `sf org display --target-org="${scratchOrgName}" --verbose --json`
   );
   const scratchOrgData = {
     branchName: branchName,
-    orgName: scratchOrgDetails.result.orgName,
-    userName: scratchOrgDetails.result.username,
-    id: scratchOrgDetails.result.id,
-    accessToken: scratchOrgDetails.result.accessToken,
-    instanceUrl: scratchOrgDetails.result.instanceUrl,
-    sfdxAuthUrl: scratchOrgDetails.result.sfdxAuthUrl,
-    createdDate: scratchOrgDetails.result.createdDate,
-    expirationDate: scratchOrgDetails.result.expirationDate
+    orgName: scratchOrgDetailResponse.result.orgName,
+    userName: scratchOrgDetailResponse.result.username,
+    id: scratchOrgDetailResponse.result.id,
+    instanceUrl: scratchOrgDetailResponse.result.instanceUrl,
+    createdDate: scratchOrgDetailResponse.result.createdDate,
+    expirationDate: scratchOrgDetailResponse.result.expirationDate
   };
+
+  const scratchOrgAuthUrlResponse = await execCommand(
+      `sf org auth show-sfdx-auth-url --target-org="${scratchOrgName}" --json`
+  );
+  scratchOrgData.sfdxAuthUrl = scratchOrgAuthUrlResponse.result.sfdxAuthUrl;
 
   return scratchOrgData;
 }
