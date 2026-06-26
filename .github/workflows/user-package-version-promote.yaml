@@ -51,6 +51,8 @@ jobs:
       - name: "Setup Node"
         if: ${{ env.BRANCH == 'master' }}
         uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
 
       - name: "Install npm dependencies"
         if: ${{ env.BRANCH == 'master' }}
