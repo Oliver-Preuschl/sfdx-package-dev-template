@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: "Fix vulnerabilities"
-        run: npm audit fix
+        run: npm audit fix --audit-level=none
 
       - name: "Commit changes"
         run: |
