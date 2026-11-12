@@ -35,9 +35,9 @@ _A brief description of the package content._
 - _Which additional steps have to be done?_
 - _Pre- & post-installation steps_
 
-## Testing
+## Usage
 
-_Rough testing instructions._
+_Usage instructions._
 
 ## Considerations
 

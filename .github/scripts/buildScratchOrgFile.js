@@ -49,30 +49,33 @@ const { execCommand } = require("../libs/sfdxExecutor.js");
 })();
 
 async function getScratchOrgDetails(branchName, scratchOrgName) {
-  const scratchOrgDetails = await execCommand(
+  const scratchOrgDetailsResponse = await execCommand(
     `sf org display --target-org "${scratchOrgName}" --verbose --json`
   );
   let scratchOrgData = {
     branchName: branchName,
-    orgName: scratchOrgDetails.result.orgName,
-    userName: scratchOrgDetails.result.username,
-    id: scratchOrgDetails.result.id,
-    accessToken: scratchOrgDetails.result.accessToken,
-    instanceUrl: scratchOrgDetails.result.instanceUrl,
-    sfdxAuthUrl: scratchOrgDetails.result.sfdxAuthUrl,
-    createdDate: scratchOrgDetails.result.createdDate,
-    expirationDate: scratchOrgDetails.result.expirationDate
+    orgName: scratchOrgDetailsResponse.result.orgName,
+    userName: scratchOrgDetailsResponse.result.username,
+    id: scratchOrgDetailsResponse.result.id,
+    instanceUrl: scratchOrgDetailsResponse.result.instanceUrl,
+    createdDate: scratchOrgDetailsResponse.result.createdDate,
+    expirationDate: scratchOrgDetailsResponse.result.expirationDate
   };
 
-  const scratchOrgLogin = await execCommand(
+  const scratchOrgAuthUrlResponse = await execCommand(
+      `sf org auth show-sfdx-auth-url --target-org="${scratchOrgName}" --json`
+  );
+  scratchOrgData.sfdxAuthUrl = scratchOrgAuthUrlResponse.result.sfdxAuthUrl;
+
+  const scratchOrgLoginResponse = await execCommand(
     `sf org open --target-org "${scratchOrgName}" --json`
   );
-  scratchOrgData.loginUrl = scratchOrgLogin.result.url;
+  scratchOrgData.loginUrl = scratchOrgLoginResponse.result.url;
 
-  const scratchOrgPassword = await execCommand(
+  const scratchOrgPasswordResponse = await execCommand(
     `sf org generate password --target-org "${scratchOrgName}" --json`
   );
-  scratchOrgData.password = scratchOrgPassword.result.password;
+  scratchOrgData.password = scratchOrgPasswordResponse.result.password;
 
   return scratchOrgData;
 }
